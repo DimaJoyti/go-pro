@@ -52,7 +52,7 @@ RUN upx --best --lzma app
 RUN ./app --version || echo "Version check completed"
 
 # Stage 2: Security scanning stage (optional, can be skipped in CI/CD)
-FROM alpine:3.19 AS security-scan
+FROM alpine:3.22 AS security-scan
 
 # Install security scanning tools
 RUN apk add --no-cache \
