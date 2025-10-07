@@ -392,66 +392,102 @@ export default function CurriculumPage() {
   const overallProgress = Math.round(phases.reduce((acc, phase) => acc + phase.progress, 0) / phases.length);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+    <div className="min-h-screen animated-gradient">
       <div className="container-responsive padding-responsive-y">
         {/* Header */}
         <div className="margin-responsive">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 lg:mb-8">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-responsive-heading font-bold tracking-tight mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                GO-PRO Curriculum
-              </h1>
-              <p className="text-responsive-body text-muted-foreground max-w-2xl">
-                Complete Go Programming Mastery - From Basics to Microservices
-              </p>
+          <div className="glass-card p-6 lg:p-8 rounded-2xl mb-8 border-2 animate-in fade-in slide-in-bottom duration-700">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+              <div className="mb-4 lg:mb-0">
+                <Badge variant="outline" className="mb-3">
+                  📚 Complete Curriculum
+                </Badge>
+                <h1 className="text-3xl lg:text-5xl font-bold tracking-tight mb-3 bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
+                  GO-PRO Curriculum
+                </h1>
+                <p className="text-base lg:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+                  Complete Go Programming Mastery - From Basics to Microservices
+                </p>
+              </div>
+              <div className="text-left lg:text-right">
+                <div className="inline-flex flex-col items-center lg:items-end p-4 rounded-xl bg-primary/10 border border-primary/20">
+                  <div className="text-4xl lg:text-5xl font-bold text-primary mb-1">{overallProgress}%</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">Overall Progress</div>
+                </div>
+              </div>
             </div>
-            <div className="text-left lg:text-right">
-              <div className="text-3xl lg:text-4xl font-bold text-primary">{overallProgress}%</div>
-              <div className="text-sm lg:text-base text-muted-foreground">Overall Progress</div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <Card className="glass-card border-2 hover:border-primary/50 transition-all duration-300 group">
+                <CardContent className="p-4 lg:p-6 text-center">
+                  <div className="p-3 rounded-xl bg-blue-500/10 w-fit mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <BookOpen className="h-6 w-6 lg:h-7 lg:w-7 text-blue-500" />
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold mb-1">20</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Lessons</div>
+                </CardContent>
+              </Card>
+              <Card className="glass-card border-2 hover:border-primary/50 transition-all duration-300 group">
+                <CardContent className="p-4 lg:p-6 text-center">
+                  <div className="p-3 rounded-xl bg-yellow-500/10 w-fit mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <Trophy className="h-6 w-6 lg:h-7 lg:w-7 text-yellow-500" />
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold mb-1">7</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Projects</div>
+                </CardContent>
+              </Card>
+              <Card className="glass-card border-2 hover:border-primary/50 transition-all duration-300 group">
+                <CardContent className="p-4 lg:p-6 text-center">
+                  <div className="p-3 rounded-xl bg-green-500/10 w-fit mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <Clock className="h-6 w-6 lg:h-7 lg:w-7 text-green-500" />
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold mb-1">16</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Weeks</div>
+                </CardContent>
+              </Card>
+              <Card className="glass-card border-2 hover:border-primary/50 transition-all duration-300 group">
+                <CardContent className="p-4 lg:p-6 text-center">
+                  <div className="p-3 rounded-xl bg-purple-500/10 w-fit mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <Award className="h-6 w-6 lg:h-7 lg:w-7 text-purple-500" />
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold mb-1">700</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Total XP</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-semibold text-primary">{overallProgress}% Complete</span>
+              </div>
+              <Progress value={overallProgress} className="h-3 shadow-sm" />
             </div>
           </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-responsive mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <BookOpen className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">20</div>
-              <div className="text-sm text-muted-foreground">Lessons</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Trophy className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">7</div>
-              <div className="text-sm text-muted-foreground">Projects</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Clock className="h-6 w-6 text-green-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">16</div>
-              <div className="text-sm text-muted-foreground">Weeks</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Award className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">700</div>
-              <div className="text-sm text-muted-foreground">Total XP</div>
-            </CardContent>
-          </Card>
         </div>
 
-        <Progress value={overallProgress} className="h-2" />
-      </div>
-
       {/* Learning Path */}
-      <Tabs value={activePhase} onValueChange={setActivePhase} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="foundations">Foundations</TabsTrigger>
-          <TabsTrigger value="intermediate">Intermediate</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced</TabsTrigger>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
+      <Tabs value={activePhase} onValueChange={setActivePhase} className="space-y-6 animate-in fade-in duration-1000">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg p-1">
+          <TabsTrigger value="foundations" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Zap className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Foundations</span>
+            <span className="sm:hidden">Basic</span>
+          </TabsTrigger>
+          <TabsTrigger value="intermediate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Code2 className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Intermediate</span>
+            <span className="sm:hidden">Inter</span>
+          </TabsTrigger>
+          <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Trophy className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Advanced</span>
+            <span className="sm:hidden">Adv</span>
+          </TabsTrigger>
+          <TabsTrigger value="projects" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Award className="mr-2 h-4 w-4" />
+            Projects
+          </TabsTrigger>
         </TabsList>
 
         {/* Phase Content */}
@@ -527,9 +563,9 @@ export default function CurriculumPage() {
                             </div>
                           </div>
                         </div>
-                        <Link href={lesson.locked ? "#" : `/learn/lesson-${lesson.id}`}>
-                          <Button 
-                            className="w-full" 
+                        <Link href={lesson.locked ? "#" : `/learn/${lesson.id}`}>
+                          <Button
+                            className="w-full"
                             variant={lesson.completed ? "outline" : "default"}
                             disabled={lesson.locked}
                           >
@@ -672,7 +708,7 @@ export default function CurriculumPage() {
             Each lesson builds upon the previous one, ensuring you develop a solid understanding of Go.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/learn/lesson-1">
+            <Link href="/learn/1">
               <Button size="lg" className="go-gradient text-white">
                 <Play className="mr-2 h-5 w-5" />
                 Start First Lesson

@@ -6,7 +6,7 @@ Welcome to the most comprehensive Go programming learning platform! This reposit
 
 This isn't just a course - it's a complete learning ecosystem that includes:
 
-- **📚 Interactive Course Content**: 15 progressive lessons from basics to microservices
+- **📚 Interactive Course Content**: 20 progressive lessons from basics to production systems
 - **💻 Hands-on Exercises**: Real coding challenges with automated testing
 - **🔧 Backend API**: Go-based REST API for the learning platform
 - **🌐 Frontend Dashboard**: Next.js-based learning interface
@@ -65,7 +65,7 @@ go-pro/
 │   ├── lessons/                 # Lesson content and theory
 │   │   ├── lesson-01/           # Go basics and syntax
 │   │   ├── lesson-02/           # Variables and functions
-│   │   └── ...                  # 15 progressive lessons
+│   │   └── ...                  # 20 progressive lessons
 │   ├── code/                    # Exercises and solutions
 │   │   ├── lesson-01/
 │   │   │   ├── exercises/       # Practice problems
@@ -111,7 +111,14 @@ go-pro/
 - **Lesson 14**: Database Integration
 - **Lesson 15**: Microservices Architecture
 
-### **Phase 4: Projects (Weeks 9-12)**
+### **Phase 4: Expert (Weeks 9-10)**
+- **Lesson 16**: Performance Optimization and Profiling
+- **Lesson 17**: Security Best Practices
+- **Lesson 18**: Deployment and DevOps
+- **Lesson 19**: Advanced Design Patterns
+- **Lesson 20**: Building Production Systems
+
+### **Phase 5: Projects (Weeks 11-14)**
 - **Project 1**: CLI Task Manager
 - **Project 2**: REST API with Database
 - **Project 3**: Real-time Chat Server

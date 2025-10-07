@@ -1,6 +1,6 @@
 # 🎓 GO-PRO Course: Master Go Programming
 
-Welcome to the most comprehensive Go programming course! This course takes you from absolute beginner to Go expert through 15 progressive lessons, hands-on exercises, and real-world projects.
+Welcome to the most comprehensive Go programming course! This course takes you from absolute beginner to Go expert through 20 progressive lessons, hands-on exercises, and real-world projects.
 
 ## 🎯 Course Overview
 
@@ -41,7 +41,16 @@ Build production-ready applications and services.
 - **[Lesson 14](lessons/lesson-14/README.md)**: Database Integration
 - **[Lesson 15](lessons/lesson-15/README.md)**: Microservices Architecture
 
-### **Phase 4: Real Projects (Weeks 9-12)**
+### **Phase 4: Expert (Weeks 9-10)**
+Master production-grade Go development.
+
+- **[Lesson 16](lessons/lesson-16/README.md)**: Performance Optimization and Profiling
+- **[Lesson 17](lessons/lesson-17/README.md)**: Security Best Practices
+- **[Lesson 18](lessons/lesson-18/README.md)**: Deployment and DevOps
+- **[Lesson 19](lessons/lesson-19/README.md)**: Advanced Design Patterns
+- **[Lesson 20](lessons/lesson-20/README.md)**: Building Production Systems
+
+### **Phase 5: Real Projects (Weeks 11-14)**
 Apply your knowledge to build complete applications.
 
 - **[Project 1](projects/cli-task-manager/README.md)**: CLI Task Manager

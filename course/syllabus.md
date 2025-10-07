@@ -2,10 +2,12 @@
 
 ## Course Information
 - **Course Title**: GO-PRO: Complete Go Programming Mastery
-- **Duration**: 12 weeks (3 months)
-- **Level**: Beginner to Advanced
+- **Duration**: 14 weeks (3.5 months)
+- **Total Lessons**: 20 comprehensive lessons
+- **Total Hours**: ~140 hours of content
+- **Level**: Beginner to Expert
 - **Prerequisites**: Basic programming knowledge
-- **Format**: Self-paced with hands-on exercises
+- **Format**: Self-paced with hands-on exercises and real projects
 
 ## 🎯 Course Objectives
 
@@ -192,7 +194,69 @@ Upon completion of this course, students will be able to:
 - **Exercises**: 11 coding challenges
 - **Assessment**: Microservices design tests
 
-### **Phase 4: Real Projects (Weeks 9-12)**
+### **Phase 4: Expert Level (Weeks 9-10)**
+
+#### **Lesson 16: Performance Optimization and Profiling**
+- **Duration**: 7-8 hours
+- **Topics**:
+  - Profiling Go applications with pprof
+  - Identifying and fixing performance bottlenecks
+  - Memory optimization and allocation reduction
+  - CPU optimization techniques
+  - Benchmarking and performance validation
+  - Caching strategies and implementation
+- **Exercises**: 10 coding challenges
+- **Assessment**: Performance optimization tests
+
+#### **Lesson 17: Security Best Practices**
+- **Duration**: 6-7 hours
+- **Topics**:
+  - Authentication and authorization (JWT, OAuth)
+  - Secure HTTP communications with TLS
+  - Input validation and sanitization
+  - SQL injection and XSS prevention
+  - Rate limiting and DDoS protection
+  - Cryptographic best practices
+- **Exercises**: 9 coding challenges
+- **Assessment**: Security implementation tests
+
+#### **Lesson 18: Deployment and DevOps**
+- **Duration**: 8-9 hours
+- **Topics**:
+  - Building and cross-compiling Go applications
+  - Docker containerization with multi-stage builds
+  - Kubernetes deployment and orchestration
+  - CI/CD pipeline setup (GitHub Actions, GitLab CI)
+  - Monitoring and logging in production
+  - Configuration and secrets management
+- **Exercises**: 10 coding challenges
+- **Assessment**: Deployment pipeline implementation
+
+#### **Lesson 19: Advanced Design Patterns**
+- **Duration**: 7-8 hours
+- **Topics**:
+  - Advanced design patterns in Go
+  - Functional programming concepts
+  - Generics and type parameters (Go 1.18+)
+  - Plugin architectures and extensibility
+  - Event-driven systems
+  - Domain-driven design principles
+- **Exercises**: 11 coding challenges
+- **Assessment**: Design pattern implementation tests
+
+#### **Lesson 20: Building Production Systems**
+- **Duration**: 10-12 hours
+- **Topics**:
+  - Complete production system architecture
+  - Comprehensive observability (tracing, metrics, logging)
+  - Scalability and maintainability patterns
+  - Handling production challenges
+  - Industry best practices and standards
+  - System evolution and growth strategies
+- **Exercises**: 12 coding challenges
+- **Assessment**: Production system design and implementation
+
+### **Phase 5: Real Projects (Weeks 11-14)**
 
 #### **Project 1: CLI Task Manager**
 - **Duration**: 1 week

@@ -20,19 +20,20 @@ import {
   Menu,
   Sun,
   Moon,
-  Github as GitHubIcon
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const Header = () => {
   const [isDark, setIsDark] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Check for saved theme preference or default to system preference
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
       setIsDark(true);
       document.documentElement.classList.add('dark');
@@ -42,7 +43,7 @@ const Header = () => {
   const toggleTheme = () => {
     const newTheme = !isDark;
     setIsDark(newTheme);
-    
+
     if (newTheme) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -85,14 +86,14 @@ const Header = () => {
       role="banner"
     >
       <div className="container flex h-14 sm:h-16 lg:h-18 max-w-screen-2xl items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8">
-        {/* Logo */}
+        {/* Enhanced Logo */}
         <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group">
-          <div className="flex h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 items-center justify-center rounded-lg bg-primary transition-transform group-hover:scale-105">
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
             <span className="text-sm sm:text-lg lg:text-xl font-bold text-primary-foreground">G</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-base sm:text-lg lg:text-xl font-bold go-gradient-text">GO-PRO</span>
-            <span className="hidden sm:block text-xs lg:text-sm text-muted-foreground -mt-1">Learn Go Programming</span>
+            <span className="text-base sm:text-lg lg:text-xl font-bold go-gradient-text group-hover:scale-105 transition-transform duration-300">GO-PRO</span>
+            <span className="hidden sm:block text-xs lg:text-sm text-muted-foreground -mt-1 group-hover:text-foreground/80 transition-colors">Learn Go Programming</span>
           </div>
         </Link>
 
@@ -148,26 +149,23 @@ const Header = () => {
 
         {/* Right side actions */}
         <div className="flex items-center space-x-1 sm:space-x-2">
-          {/* Theme toggle - always visible */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-8 w-8 sm:h-9 sm:w-9"
-          >
-            {isDark ? (
-              <Sun className="h-3 w-3 sm:h-4 sm:w-4" />
-            ) : (
-              <Moon className="h-3 w-3 sm:h-4 sm:w-4" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-
-          {/* GitHub - hidden on small screens */}
-          <Button variant="ghost" size="icon" className="hidden sm:flex h-8 w-8 sm:h-9 sm:w-9">
-            <GitHubIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="sr-only">GitHub</span>
-          </Button>
+          {/* Enhanced Theme toggle */}
+          {mounted && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-8 w-8 sm:h-9 sm:w-9 relative overflow-hidden group hover:bg-primary/10 transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {isDark ? (
+                <Sun className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 group-hover:rotate-90 transition-transform duration-500 relative z-10" />
+              ) : (
+                <Moon className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 group-hover:-rotate-12 transition-transform duration-500 relative z-10" />
+              )}
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          )}
 
           {/* CTA Section - responsive visibility */}
           <div className="hidden sm:flex items-center space-x-2 ml-2">
@@ -221,19 +219,9 @@ const Header = () => {
             ))}
 
             {/* Mobile CTA Section */}
-            <div className="pt-3 border-t border-border space-y-2">
+            <div className="pt-3 border-t border-border">
               <Button size="sm" className="w-full go-gradient text-white">
                 Get Started
-              </Button>
-
-              {/* GitHub link for mobile */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full sm:hidden"
-              >
-                <GitHubIcon className="mr-2 h-4 w-4" />
-                View on GitHub
               </Button>
             </div>
           </div>
