@@ -91,7 +91,7 @@ jobs:
           infracost breakdown --path . --format json --out-file /tmp/infracost.json
 
       - name: Post Infracost comment
-        uses: infracost/actions/comment@v1
+        uses: infracost/actions/comment@v3
         if: github.event_name == 'pull_request'
         with:
           path: /tmp/infracost.json
