@@ -1,0 +1,111 @@
+# markdownlint configuration for GO-PRO project
+# See https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+
+default: true
+
+# Line length
+MD013:
+  line_length: 120
+  heading_line_length: 80
+  code_block_line_length: 120
+  tables: false
+
+# Multiple headings with the same content
+MD024:
+  allow_different_nesting: true
+  siblings_only: false
+
+# Multiple top level headings
+MD025:
+  front_matter_title: ""
+
+# Trailing punctuation in heading
+MD026:
+  punctuation: ".,;:!?"
+
+# Multiple spaces after blockquote symbol
+MD027: true
+
+# Blank line inside blockquote
+MD028: false
+
+# Ordered list item prefix
+MD029:
+  style: "ordered"
+
+# Spaces after list markers
+MD030:
+  ul_single: 1
+  ol_single: 1
+  ul_multi: 1
+  ol_multi: 1
+
+# Fenced code blocks should be surrounded by blank lines
+MD031: true
+
+# Lists should be surrounded by blank lines
+MD032: true
+
+# Inline HTML
+MD033:
+  allowed_elements: ["br", "sub", "sup", "kbd", "img", "a"]
+
+# Bare URL used
+MD034: false
+
+# Horizontal rule style
+MD035:
+  style: "---"
+
+# Emphasis used instead of heading
+MD036:
+  punctuation: ".,;:!?"
+
+# Spaces inside emphasis markers
+MD037: true
+
+# Spaces inside code span elements
+MD038: true
+
+# Spaces inside link text
+MD039: true
+
+# Fenced code blocks should have a language specified
+MD040: true
+
+# First line in file should be a top level heading
+MD041: false
+
+# No empty links
+MD042: true
+
+# Required heading structure
+MD043: false
+
+# Proper names should have the correct capitalization
+MD044: false
+
+# Images should have alternate text (alt text)
+MD045: true
+
+# Code block style
+MD046:
+  style: "fenced"
+
+# Files should end with a single newline character
+MD047: true
+
+# Code fence style
+MD048:
+  style: "backtick"
+
+# Emphasis style
+MD049:
+  style: "asterisk"
+
+# Strong style
+MD050:
+  style: "asterisk"
+
+# Link fragments should be valid
+MD051: true

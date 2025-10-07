@@ -1,0 +1,81 @@
+# Prometheus configuration for GO-PRO development environment
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'go-pro-dev'
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # GO-PRO Backend API
+  - job_name: 'go-pro-backend'
+    static_configs:
+      - targets: ['go-pro-backend:8080']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    scrape_timeout: 5s
+    honor_labels: false
+    honor_timestamps: true
+    scheme: http
+    params:
+      format: ['prometheus']
+
+  # Node Exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Redis metrics (if redis_exporter is added)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # PostgreSQL metrics (if postgres_exporter is added)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Docker container metrics (if cAdvisor is added)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Custom application metrics
+  - job_name: 'go-pro-custom-metrics'
+    static_configs:
+      - targets: ['go-pro-backend:8080']
+    scrape_interval: 15s
+    metrics_path: /api/v1/metrics
+    scrape_timeout: 10s
+    honor_labels: true
+
+# Remote write configuration (for production)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint"
+#     queue_config:
+#       max_samples_per_send: 10000
+#       max_shards: 200
+#       capacity: 2500

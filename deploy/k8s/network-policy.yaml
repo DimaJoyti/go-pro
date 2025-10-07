@@ -1,0 +1,516 @@
+# Network Policies for GO-PRO application security
+# Default deny all ingress traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+
+---
+# Default deny all egress traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+
+---
+# Allow backend to communicate with database
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-to-postgres
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: go-pro-backend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+# Allow backend to communicate with Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-to-redis
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: go-pro-backend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+
+---
+# Allow backend to communicate with Kafka
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-to-kafka
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: go-pro-backend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 9092
+  - to:
+    - podSelector:
+        matchLabels:
+          app: zookeeper
+    ports:
+    - protocol: TCP
+      port: 2181
+
+---
+# Allow ingress traffic to backend from frontend and ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-ingress
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: go-pro-backend
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from frontend
+  - from:
+    - podSelector:
+        matchLabels:
+          app: go-pro-frontend
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090  # metrics port
+
+---
+# Allow ingress traffic to frontend from ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-ingress
+  namespace: go-pro
+  labels:
+    app: go-pro-frontend
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: go-pro-frontend
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 3000
+
+---
+# Allow frontend to communicate with backend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-to-backend
+  namespace: go-pro
+  labels:
+    app: go-pro-frontend
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: go-pro-frontend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: go-pro-backend
+    ports:
+    - protocol: TCP
+      port: 8080
+
+---
+# Allow database ingress only from backend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-ingress
+  namespace: go-pro
+  labels:
+    app: postgres
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from backend
+  - from:
+    - podSelector:
+        matchLabels:
+          app: go-pro-backend
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Allow from monitoring (postgres exporter)
+  - from:
+    - podSelector:
+        matchLabels:
+          app: postgres-exporter
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+# Allow Redis ingress only from backend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-ingress
+  namespace: go-pro
+  labels:
+    app: redis
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from backend
+  - from:
+    - podSelector:
+        matchLabels:
+          app: go-pro-backend
+    ports:
+    - protocol: TCP
+      port: 6379
+  # Allow from monitoring (redis exporter)
+  - from:
+    - podSelector:
+        matchLabels:
+          app: redis-exporter
+    ports:
+    - protocol: TCP
+      port: 6379
+
+---
+# Allow Kafka ingress from backend and other Kafka components
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kafka-ingress
+  namespace: go-pro
+  labels:
+    app: kafka
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from backend
+  - from:
+    - podSelector:
+        matchLabels:
+          app: go-pro-backend
+    ports:
+    - protocol: TCP
+      port: 9092
+  # Allow from other Kafka pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 9092
+    - protocol: TCP
+      port: 9093
+  # Allow from Zookeeper
+  - from:
+    - podSelector:
+        matchLabels:
+          app: zookeeper
+    ports:
+    - protocol: TCP
+      port: 9092
+
+---
+# Allow Zookeeper communication
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zookeeper-ingress
+  namespace: go-pro
+  labels:
+    app: zookeeper
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: zookeeper
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from Kafka
+  - from:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 2181
+  # Allow from other Zookeeper pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: zookeeper
+    ports:
+    - protocol: TCP
+      port: 2181
+    - protocol: TCP
+      port: 2888
+    - protocol: TCP
+      port: 3888
+
+---
+# Allow DNS resolution for all pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Allow external HTTPS traffic for API calls
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external-https
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: go-pro-backend
+  policyTypes:
+  - Egress
+  egress:
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+
+---
+# Allow monitoring traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+    ports:
+    - protocol: TCP
+      port: 9090  # metrics
+    - protocol: TCP
+      port: 8080  # health checks
+    - protocol: TCP
+      port: 15090 # Envoy admin
+
+---
+# Allow Istio sidecar communication
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-istio-sidecar
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow from Istio system
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+  egress:
+  # Allow to Istio system
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+  # Allow sidecar to sidecar communication
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15001  # Envoy admin
+    - protocol: TCP
+      port: 15006  # Envoy inbound
+    - protocol: TCP
+      port: 15090  # Envoy stats
+
+---
+# Calico GlobalNetworkPolicy (if using Calico CNI)
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: go-pro-global-policy
+spec:
+  order: 100
+  selector: projectcalico.org/namespace == "go-pro"
+  types:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow from same namespace
+  - action: Allow
+    source:
+      namespaceSelector: projectcalico.org/name == "go-pro"
+  # Deny from other namespaces by default
+  - action: Deny
+    source:
+      namespaceSelector: projectcalico.org/name != "go-pro"
+  egress:
+  # Allow to same namespace
+  - action: Allow
+    destination:
+      namespaceSelector: projectcalico.org/name == "go-pro"
+  # Allow DNS
+  - action: Allow
+    protocol: UDP
+    destination:
+      ports: [53]
+  - action: Allow
+    protocol: TCP
+    destination:
+      ports: [53]
+  # Allow HTTPS for external APIs
+  - action: Allow
+    protocol: TCP
+    destination:
+      ports: [443, 80]

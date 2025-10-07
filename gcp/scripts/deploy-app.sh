@@ -1,0 +1,228 @@
+#!/bin/bash
+
+# GO-PRO Application Deployment Script for GCP
+# This script deploys the GO-PRO application to GKE
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+PROJECT_ID="${GCP_PROJECT_ID:-gopro-project}"
+ENVIRONMENT="${ENVIRONMENT:-development}"
+NAMESPACE="gopro"
+CLUSTER_NAME="${CLUSTER_NAME:-gopro-dev-cluster}"
+REGION="${GCP_REGION:-us-central1}"
+ARTIFACT_REGISTRY="${ARTIFACT_REGISTRY:-us-central1-docker.pkg.dev/$PROJECT_ID/gopro}"
+
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}GO-PRO Application Deployment (GCP)${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo ""
+echo "Project ID: $PROJECT_ID"
+echo "Environment: $ENVIRONMENT"
+echo "Namespace: $NAMESPACE"
+echo "Cluster: $CLUSTER_NAME"
+echo "Region: $REGION"
+echo ""
+
+# Check prerequisites
+echo -e "${YELLOW}Checking prerequisites...${NC}"
+command -v kubectl >/dev/null 2>&1 || { echo -e "${RED}kubectl is required but not installed.${NC}" >&2; exit 1; }
+command -v gcloud >/dev/null 2>&1 || { echo -e "${RED}gcloud CLI is required but not installed.${NC}" >&2; exit 1; }
+echo -e "${GREEN}✓ All prerequisites met${NC}"
+
+# Set project
+echo -e "${YELLOW}Setting GCP project...${NC}"
+gcloud config set project "$PROJECT_ID"
+echo -e "${GREEN}✓ Project set${NC}"
+
+# Get cluster credentials
+echo -e "${YELLOW}Getting cluster credentials...${NC}"
+gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$REGION"
+echo -e "${GREEN}✓ Credentials configured${NC}"
+
+# Verify cluster access
+echo -e "${YELLOW}Verifying cluster access...${NC}"
+kubectl cluster-info > /dev/null 2>&1 || { echo -e "${RED}Cannot access cluster${NC}" >&2; exit 1; }
+echo -e "${GREEN}✓ Cluster access verified${NC}"
+
+# Create namespace if it doesn't exist
+echo -e "${YELLOW}Creating namespace...${NC}"
+kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+echo -e "${GREEN}✓ Namespace ready${NC}"
+
+# Check for required secrets
+echo -e "${YELLOW}Checking for required secrets...${NC}"
+REQUIRED_SECRETS=("database-credentials" "redis-credentials" "jwt-secret")
+MISSING_SECRETS=()
+
+for secret in "${REQUIRED_SECRETS[@]}"; do
+    if ! kubectl get secret "$secret" -n "$NAMESPACE" > /dev/null 2>&1; then
+        MISSING_SECRETS+=("$secret")
+    fi
+done
+
+if [ ${#MISSING_SECRETS[@]} -ne 0 ]; then
+    echo -e "${RED}Missing required secrets:${NC}"
+    for secret in "${MISSING_SECRETS[@]}"; do
+        echo "  - $secret"
+    done
+    echo ""
+    echo "Please create the missing secrets before deploying."
+    echo "Example:"
+    echo "  kubectl create secret generic database-credentials \\"
+    echo "    --from-literal=host=<cloud-sql-proxy-host> \\"
+    echo "    --from-literal=port=5432 \\"
+    echo "    --from-literal=username=<db-user> \\"
+    echo "    --from-literal=password=<db-password> \\"
+    echo "    --from-literal=database=gopro \\"
+    echo "    -n $NAMESPACE"
+    exit 1
+fi
+echo -e "${GREEN}✓ All required secrets present${NC}"
+
+# Build and push Docker images (if needed)
+if [ "$BUILD_IMAGES" = "true" ]; then
+    echo -e "${YELLOW}Building and pushing Docker images...${NC}"
+    
+    # Configure Docker for Artifact Registry
+    gcloud auth configure-docker "$REGION-docker.pkg.dev"
+    
+    # Backend
+    echo -e "${BLUE}Building backend image...${NC}"
+    gcloud builds submit ../../backend \
+      --tag="$ARTIFACT_REGISTRY/backend:$ENVIRONMENT" \
+      --project="$PROJECT_ID"
+    
+    # Frontend
+    echo -e "${BLUE}Building frontend image...${NC}"
+    gcloud builds submit ../../frontend \
+      --tag="$ARTIFACT_REGISTRY/frontend:$ENVIRONMENT" \
+      --project="$PROJECT_ID"
+    
+    echo -e "${GREEN}✓ Images built and pushed${NC}"
+fi
+
+# Deploy Cloud SQL Proxy sidecar
+echo -e "${YELLOW}Deploying Cloud SQL Proxy...${NC}"
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudsql-proxy-config
+  namespace: $NAMESPACE
+data:
+  instance-connection-name: "$PROJECT_ID:$REGION:gopro-dev-db"
+EOF
+echo -e "${GREEN}✓ Cloud SQL Proxy configured${NC}"
+
+# Deploy application using Kustomize
+echo -e "${YELLOW}Deploying application...${NC}"
+kubectl apply -k "../../k8s/overlays/$ENVIRONMENT"
+echo -e "${GREEN}✓ Application deployed${NC}"
+
+# Wait for deployments to be ready
+echo -e "${YELLOW}Waiting for deployments to be ready...${NC}"
+kubectl wait --for=condition=available --timeout=300s \
+    deployment/backend deployment/frontend -n "$NAMESPACE" || {
+    echo -e "${RED}Deployment failed to become ready${NC}"
+    echo "Checking pod status:"
+    kubectl get pods -n "$NAMESPACE"
+    echo ""
+    echo "Recent events:"
+    kubectl get events -n "$NAMESPACE" --sort-by='.lastTimestamp' | tail -20
+    exit 1
+}
+echo -e "${GREEN}✓ Deployments ready${NC}"
+
+# Get deployment status
+echo -e "${YELLOW}Deployment status:${NC}"
+kubectl get deployments -n "$NAMESPACE"
+echo ""
+kubectl get pods -n "$NAMESPACE"
+echo ""
+kubectl get svc -n "$NAMESPACE"
+echo ""
+
+# Get ingress information
+echo -e "${YELLOW}Ingress information:${NC}"
+kubectl get ingress -n "$NAMESPACE" 2>/dev/null || echo "No ingress found"
+echo ""
+
+# Get load balancer IP
+echo -e "${YELLOW}Getting load balancer IP...${NC}"
+LB_IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "Not available yet")
+echo "Load Balancer IP: $LB_IP"
+echo ""
+
+# Run smoke tests
+if [ "$RUN_SMOKE_TESTS" = "true" ]; then
+    echo -e "${YELLOW}Running smoke tests...${NC}"
+    
+    # Wait for load balancer to be ready
+    echo "Waiting for load balancer to be ready..."
+    sleep 30
+    
+    # Test backend health endpoint
+    echo "Testing backend health endpoint..."
+    if curl -f -s "http://$LB_IP/health" > /dev/null; then
+        echo -e "${GREEN}✓ Backend health check passed${NC}"
+    else
+        echo -e "${RED}✗ Backend health check failed${NC}"
+    fi
+    
+    # Test frontend
+    echo "Testing frontend..."
+    if curl -f -s "http://$LB_IP/" > /dev/null; then
+        echo -e "${GREEN}✓ Frontend check passed${NC}"
+    else
+        echo -e "${RED}✗ Frontend check failed${NC}"
+    fi
+fi
+
+# Setup Cloud Monitoring
+echo -e "${YELLOW}Setting up Cloud Monitoring...${NC}"
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+  namespace: $NAMESPACE
+data:
+  project-id: "$PROJECT_ID"
+  cluster-name: "$CLUSTER_NAME"
+  region: "$REGION"
+EOF
+echo -e "${GREEN}✓ Cloud Monitoring configured${NC}"
+
+echo ""
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}Deployment complete!${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo ""
+echo "Application URLs:"
+echo "  Frontend: http://$LB_IP"
+echo "  Backend API: http://$LB_IP/api"
+echo ""
+echo "Useful commands:"
+echo "  kubectl get pods -n $NAMESPACE"
+echo "  kubectl logs -f deployment/backend -n $NAMESPACE"
+echo "  kubectl logs -f deployment/frontend -n $NAMESPACE"
+echo "  kubectl describe pod <pod-name> -n $NAMESPACE"
+echo "  kubectl exec -it deployment/backend -n $NAMESPACE -- /bin/sh"
+echo ""
+echo "Monitoring:"
+echo "  gcloud logging read 'resource.type=k8s_cluster' --limit 50"
+echo "  kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring"
+echo ""
+echo "Cloud Console:"
+echo "  https://console.cloud.google.com/kubernetes/workload?project=$PROJECT_ID"
+echo "  https://console.cloud.google.com/monitoring?project=$PROJECT_ID"
+echo ""
+

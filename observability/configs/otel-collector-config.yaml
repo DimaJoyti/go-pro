@@ -1,0 +1,278 @@
+# OpenTelemetry Collector Configuration for GO-PRO
+# This configuration receives telemetry data from applications and exports to various backends
+
+receivers:
+  # OTLP receiver for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+  
+  # Jaeger receiver for backward compatibility
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+      thrift_compact:
+        endpoint: 0.0.0.0:6831
+  
+  # Zipkin receiver for backward compatibility
+  zipkin:
+    endpoint: 0.0.0.0:9411
+  
+  # Prometheus receiver for scraping metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['localhost:8888']
+
+processors:
+  # Batch processor for better performance
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+  
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+  
+  # Resource processor to add/modify resource attributes
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: ${ENVIRONMENT}
+        action: upsert
+      - key: service.namespace
+        value: gopro
+        action: upsert
+  
+  # Attributes processor for span attributes
+  attributes:
+    actions:
+      - key: http.user_agent
+        action: delete
+      - key: net.peer.ip
+        action: hash
+  
+  # Probabilistic sampler for high-volume traces
+  probabilistic_sampler:
+    sampling_percentage: 10
+  
+  # Tail sampling for intelligent sampling
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100
+    expected_new_traces_per_sec: 10
+    policies:
+      # Always sample errors
+      - name: error-traces
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+      
+      # Always sample slow requests
+      - name: slow-traces
+        type: latency
+        latency:
+          threshold_ms: 1000
+      
+      # Sample 10% of normal traces
+      - name: probabilistic-policy
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+  
+  # Filter processor to drop unwanted data
+  filter:
+    metrics:
+      exclude:
+        match_type: regexp
+        metric_names:
+          - ^go_.*
+          - ^process_.*
+    
+    spans:
+      exclude:
+        match_type: strict
+        span_names:
+          - /health
+          - /metrics
+          - /ready
+  
+  # Transform processor for data transformation
+  transform:
+    metric_statements:
+      - context: metric
+        statements:
+          - set(description, "Transformed metric") where name == "http.server.duration"
+
+exporters:
+  # Jaeger exporter for distributed tracing
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+  
+  # Prometheus exporter for metrics
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: gopro
+    const_labels:
+      environment: ${ENVIRONMENT}
+  
+  # Prometheus remote write exporter
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+    tls:
+      insecure: true
+  
+  # Loki exporter for logs
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+    labels:
+      attributes:
+        service.name: "service_name"
+        deployment.environment: "environment"
+  
+  # OTLP exporter for forwarding to another collector
+  otlp:
+    endpoint: otel-collector-gateway:4317
+    tls:
+      insecure: true
+  
+  # AWS CloudWatch exporter
+  awscloudwatch:
+    region: us-east-1
+    namespace: GO-PRO
+    log_group_name: /gopro/otel
+    log_stream_name: collector
+  
+  # GCP Cloud Trace exporter
+  googlecloud:
+    project: gopro-project
+    trace:
+      endpoint: cloudtrace.googleapis.com:443
+    metric:
+      endpoint: monitoring.googleapis.com:443
+  
+  # Logging exporter for debugging
+  logging:
+    loglevel: debug
+    sampling_initial: 5
+    sampling_thereafter: 200
+  
+  # File exporter for backup
+  file:
+    path: /var/log/otel/traces.json
+    rotation:
+      max_megabytes: 100
+      max_days: 7
+      max_backups: 3
+
+extensions:
+  # Health check extension
+  health_check:
+    endpoint: 0.0.0.0:13133
+  
+  # Performance profiler
+  pprof:
+    endpoint: 0.0.0.0:1777
+  
+  # zPages for debugging
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+  
+  pipelines:
+    # Traces pipeline
+    traces:
+      receivers: [otlp, jaeger, zipkin]
+      processors: [memory_limiter, batch, resource, attributes, tail_sampling]
+      exporters: [jaeger, logging]
+    
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, batch, resource, filter, transform]
+      exporters: [prometheus, prometheusremotewrite, logging]
+    
+    # Logs pipeline
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [loki, logging]
+  
+  # Telemetry configuration
+  telemetry:
+    logs:
+      level: info
+      development: false
+      encoding: json
+      output_paths:
+        - stdout
+        - /var/log/otel/collector.log
+    
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888
+
+# Environment-specific configurations
+# Development
+---
+# Production overrides
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+        max_recv_msg_size_mib: 32
+        max_concurrent_streams: 100
+      http:
+        endpoint: 0.0.0.0:4318
+        max_request_body_size: 10485760
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 2048
+    send_batch_max_size: 4096
+  
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 2048
+    spike_limit_mib: 512
+  
+  tail_sampling:
+    decision_wait: 30s
+    num_traces: 1000
+    expected_new_traces_per_sec: 100
+
+exporters:
+  logging:
+    loglevel: info
+    sampling_initial: 100
+    sampling_thereafter: 1000
+
+service:
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      level: normal
+

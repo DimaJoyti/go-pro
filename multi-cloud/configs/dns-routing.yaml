@@ -1,0 +1,259 @@
+# Multi-Cloud DNS Routing Configuration
+# This file documents DNS routing strategies for multi-cloud deployment
+
+# Route 53 (AWS) Configuration
+route53:
+  hosted_zone:
+    name: gopro.com
+    type: public
+    
+  # Geolocation Routing
+  geolocation_routing:
+    - record_name: api.gopro.com
+      type: A
+      policies:
+        - location: north-america
+          target: aws-load-balancer.us-east-1.elb.amazonaws.com
+          weight: 100
+        - location: europe
+          target: gcp-load-balancer.europe-west1.lb.google.com
+          weight: 100
+        - location: asia
+          target: gcp-load-balancer.asia-southeast1.lb.google.com
+          weight: 100
+        - location: default
+          target: aws-load-balancer.us-east-1.elb.amazonaws.com
+          weight: 100
+  
+  # Latency-Based Routing
+  latency_routing:
+    - record_name: app.gopro.com
+      type: A
+      regions:
+        - region: us-east-1
+          target: aws-load-balancer.us-east-1.elb.amazonaws.com
+          health_check: /health
+        - region: us-central1
+          target: gcp-load-balancer.us-central1.lb.google.com
+          health_check: /health
+  
+  # Weighted Routing (A/B Testing)
+  weighted_routing:
+    - record_name: beta.gopro.com
+      type: A
+      targets:
+        - target: aws-load-balancer.us-east-1.elb.amazonaws.com
+          weight: 70
+          identifier: aws-primary
+        - target: gcp-load-balancer.us-central1.lb.google.com
+          weight: 30
+          identifier: gcp-secondary
+  
+  # Failover Routing
+  failover_routing:
+    - record_name: gopro.com
+      type: A
+      primary:
+        target: aws-load-balancer.us-east-1.elb.amazonaws.com
+        health_check:
+          endpoint: /health
+          interval: 30
+          timeout: 10
+          failure_threshold: 3
+      secondary:
+        target: gcp-load-balancer.us-central1.lb.google.com
+        health_check:
+          endpoint: /health
+          interval: 30
+          timeout: 10
+          failure_threshold: 3
+
+# Cloud DNS (GCP) Configuration
+cloud_dns:
+  managed_zone:
+    name: gopro-zone
+    dns_name: gopro.com
+    
+  # Geographic Routing
+  geographic_routing:
+    - name: api.gopro.com
+      type: A
+      policies:
+        - location: us-east1
+          rrdatas:
+            - aws-load-balancer.us-east-1.elb.amazonaws.com
+        - location: europe-west1
+          rrdatas:
+            - gcp-load-balancer.europe-west1.lb.google.com
+        - location: asia-southeast1
+          rrdatas:
+            - gcp-load-balancer.asia-southeast1.lb.google.com
+  
+  # Weighted Round Robin
+  weighted_round_robin:
+    - name: app.gopro.com
+      type: A
+      rrdatas:
+        - weight: 70
+          target: aws-load-balancer.us-east-1.elb.amazonaws.com
+        - weight: 30
+          target: gcp-load-balancer.us-central1.lb.google.com
+
+# Health Checks
+health_checks:
+  aws:
+    - name: aws-backend-health
+      protocol: HTTPS
+      port: 443
+      path: /health
+      interval: 30
+      timeout: 10
+      healthy_threshold: 2
+      unhealthy_threshold: 3
+      
+  gcp:
+    - name: gcp-backend-health
+      protocol: HTTPS
+      port: 443
+      request_path: /health
+      check_interval_sec: 30
+      timeout_sec: 10
+      healthy_threshold: 2
+      unhealthy_threshold: 3
+
+# Traffic Distribution Strategy
+traffic_distribution:
+  strategy: hybrid
+  
+  # Geographic Distribution
+  geographic:
+    north_america:
+      primary: aws
+      secondary: gcp
+      split: 80/20
+    
+    europe:
+      primary: gcp
+      secondary: aws
+      split: 70/30
+    
+    asia:
+      primary: gcp
+      secondary: aws
+      split: 90/10
+    
+    south_america:
+      primary: aws
+      secondary: gcp
+      split: 100/0
+  
+  # Time-Based Distribution (Optional)
+  time_based:
+    business_hours:
+      primary: aws
+      secondary: gcp
+      split: 70/30
+    
+    off_hours:
+      primary: gcp
+      secondary: aws
+      split: 50/50
+  
+  # Load-Based Distribution
+  load_based:
+    threshold: 80  # CPU percentage
+    action: shift_traffic
+    target: secondary
+    increment: 10  # Shift 10% at a time
+
+# Failover Configuration
+failover:
+  automatic: true
+  
+  triggers:
+    - type: health_check_failure
+      threshold: 3
+      duration: 90s
+      action: failover_to_secondary
+    
+    - type: high_error_rate
+      threshold: 5  # 5% error rate
+      duration: 300s
+      action: gradual_shift
+    
+    - type: high_latency
+      threshold: 1000  # 1000ms
+      duration: 300s
+      action: gradual_shift
+  
+  rollback:
+    automatic: true
+    conditions:
+      - primary_healthy_for: 600s
+      - error_rate_below: 1
+      - latency_below: 500
+    
+    strategy: gradual
+    increment: 10
+    interval: 60s
+
+# DNS TTL Configuration
+ttl:
+  production: 60  # 1 minute for fast failover
+  staging: 300    # 5 minutes
+  development: 600  # 10 minutes
+
+# Monitoring
+monitoring:
+  dns_queries:
+    enabled: true
+    metrics:
+      - query_count
+      - query_latency
+      - cache_hit_rate
+  
+  health_checks:
+    enabled: true
+    metrics:
+      - check_success_rate
+      - check_latency
+      - failover_count
+  
+  traffic_distribution:
+    enabled: true
+    metrics:
+      - requests_by_region
+      - requests_by_provider
+      - latency_by_provider
+
+# Example Terraform Configuration
+# terraform:
+#   route53_record:
+#     resource "aws_route53_record" "api" {
+#       zone_id = aws_route53_zone.main.zone_id
+#       name    = "api.gopro.com"
+#       type    = "A"
+#       
+#       failover_routing_policy {
+#         type = "PRIMARY"
+#       }
+#       
+#       alias {
+#         name                   = aws_lb.main.dns_name
+#         zone_id                = aws_lb.main.zone_id
+#         evaluate_target_health = true
+#       }
+#       
+#       health_check_id = aws_route53_health_check.main.id
+#     }
+#   
+#   cloud_dns_record:
+#     resource "google_dns_record_set" "api" {
+#       name         = "api.gopro.com."
+#       managed_zone = google_dns_managed_zone.main.name
+#       type         = "A"
+#       ttl          = 60
+#       
+#       rrdatas = [google_compute_global_address.main.address]
+#     }
+

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: gopro
+data:
+  api-url: "https://api.gopro.com"
+  environment: "production"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: gopro
+data:
+  brokers: "gopro-kafka-bootstrap.kafka.svc.cluster.local:9092"
+  topics: "user-events,course-events,progress-events,notification-events"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+  namespace: gopro
+data:
+  prometheus-url: "http://prometheus-server.monitoring.svc.cluster.local"
+  grafana-url: "http://grafana.monitoring.svc.cluster.local"
+  jaeger-url: "http://jaeger-collector.monitoring.svc.cluster.local:14268"
+

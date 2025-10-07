@@ -1,0 +1,69 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+docs/
+*.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.html
+coverage.out
+
+# Dependency directories
+vendor/
+node_modules/
+
+# Test files
+*_test.go
+testdata/
+test/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Development tools
+.air.toml
+hot-reload*
+
+# CI/CD files
+.github/
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Configuration files that shouldn't be in container
+.env*
+config/local*
+
+# Scripts and tools
+scripts/
+tools/
+bin/

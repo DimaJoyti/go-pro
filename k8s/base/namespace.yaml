@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gopro
+  labels:
+    name: gopro
+    environment: base
+    istio-injection: enabled
+

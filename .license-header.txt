@@ -1,0 +1,3 @@
+GO-PRO Learning Platform Backend
+Copyright (c) 2024 GO-PRO Team
+Licensed under MIT License

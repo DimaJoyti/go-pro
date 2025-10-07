@@ -1,0 +1,459 @@
+# Istio Service Mesh configuration for GO-PRO application
+# Gateway for external traffic
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: go-pro-gateway
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - go-pro.example.com
+    - api.go-pro.example.com
+    tls:
+      httpsRedirect: true
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - go-pro.example.com
+    - api.go-pro.example.com
+    tls:
+      mode: SIMPLE
+      credentialName: go-pro-tls-secret
+
+---
+# Virtual Service for traffic routing
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: go-pro-vs
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: virtual-service
+spec:
+  hosts:
+  - go-pro.example.com
+  - api.go-pro.example.com
+  gateways:
+  - go-pro-gateway
+  http:
+  # API routes
+  - match:
+    - uri:
+        prefix: /api/
+    - headers:
+        host:
+          exact: api.go-pro.example.com
+    route:
+    - destination:
+        host: go-pro-backend-service
+        port:
+          number: 8080
+    fault:
+      delay:
+        percentage:
+          value: 0.1
+        fixedDelay: 5s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+    timeout: 30s
+  # Frontend routes
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: go-pro-frontend-service
+        port:
+          number: 3000
+    timeout: 30s
+  # Health check routes (bypass retries)
+  - match:
+    - uri:
+        exact: /api/v1/health
+    route:
+    - destination:
+        host: go-pro-backend-service
+        port:
+          number: 8080
+    timeout: 5s
+
+---
+# Destination Rule for load balancing and circuit breaking
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: go-pro-backend-dr
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: destination-rule
+spec:
+  host: go-pro-backend-service
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_CONN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 30s
+        tcpNoDelay: true
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 10
+        maxRetries: 3
+        idleTimeout: 60s
+        h2UpgradePolicy: UPGRADE
+    circuitBreaker:
+      consecutiveGatewayErrors: 5
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+    outlierDetection:
+      consecutiveGatewayErrors: 5
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: go-pro-frontend-dr
+  namespace: go-pro
+  labels:
+    app: go-pro-frontend
+    component: destination-rule
+spec:
+  host: go-pro-frontend-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 10s
+      http:
+        http1MaxPendingRequests: 25
+        maxRequestsPerConnection: 5
+        idleTimeout: 30s
+
+---
+# Service Entry for external dependencies
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-apis
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: service-entry
+spec:
+  hosts:
+  - api.github.com
+  - api.stripe.com
+  - hooks.slack.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  location: MESH_EXTERNAL
+  resolution: DNS
+
+---
+# Authorization Policy for security
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: go-pro-authz
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: authorization
+spec:
+  selector:
+    matchLabels:
+      app: go-pro-backend
+  rules:
+  # Allow health checks from anywhere
+  - to:
+    - operation:
+        paths: ["/api/v1/health", "/metrics"]
+  # Allow API access with valid JWT
+  - to:
+    - operation:
+        paths: ["/api/*"]
+    when:
+    - key: request.auth.claims[iss]
+      values: ["https://go-pro.example.com"]
+    - key: request.auth.claims[aud]
+      values: ["go-pro-api"]
+  # Allow internal service communication
+  - from:
+    - source:
+        principals: ["cluster.local/ns/go-pro/sa/go-pro-backend"]
+        namespaces: ["go-pro"]
+
+---
+# Request Authentication for JWT validation
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: go-pro-jwt
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: authentication
+spec:
+  selector:
+    matchLabels:
+      app: go-pro-backend
+  jwtRules:
+  - issuer: "https://go-pro.example.com"
+    audiences:
+    - "go-pro-api"
+    jwksUri: "https://go-pro.example.com/.well-known/jwks.json"
+    forwardOriginalToken: true
+
+---
+# Peer Authentication for mTLS
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: go-pro-mtls
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: peer-authentication
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Telemetry configuration
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: go-pro-telemetry
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: telemetry
+spec:
+  metrics:
+  - providers:
+    - name: prometheus
+  - overrides:
+    - match:
+        metric: ALL_METRICS
+      tagOverrides:
+        request_id:
+          operation: UPSERT
+          value: "%{REQUEST_ID}"
+        user_id:
+          operation: UPSERT
+          value: "%{REQUEST_HEADERS['x-user-id']}"
+  tracing:
+  - providers:
+    - name: jaeger
+  accessLogging:
+  - providers:
+    - name: otel
+
+---
+# Envoy Filter for custom headers
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: go-pro-headers
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: envoy-filter
+spec:
+  workloadSelector:
+    labels:
+      app: go-pro-backend
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inline_code: |
+            function envoy_on_request(request_handle)
+              -- Add custom headers
+              request_handle:headers():add("x-request-start", os.time())
+              request_handle:headers():add("x-forwarded-by", "istio-proxy")
+            end
+            
+            function envoy_on_response(response_handle)
+              -- Add response headers
+              response_handle:headers():add("x-response-time", os.time())
+              response_handle:headers():add("x-served-by", "go-pro-backend")
+            end
+
+---
+# Sidecar configuration for resource optimization
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: go-pro-backend-sidecar
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: sidecar
+spec:
+  workloadSelector:
+    labels:
+      app: go-pro-backend
+  ingress:
+  - port:
+      number: 8080
+      protocol: HTTP
+      name: http
+    defaultEndpoint: 127.0.0.1:8080
+  - port:
+      number: 9090
+      protocol: HTTP
+      name: metrics
+    defaultEndpoint: 127.0.0.1:9090
+  egress:
+  - hosts:
+    - "./*"
+    - "istio-system/*"
+    - "kube-system/*"
+  - port:
+      number: 5432
+      protocol: TCP
+      name: postgres
+    hosts:
+    - "./postgres-service"
+  - port:
+      number: 6379
+      protocol: TCP
+      name: redis
+    hosts:
+    - "./redis-service"
+  - port:
+      number: 9092
+      protocol: TCP
+      name: kafka
+    hosts:
+    - "./kafka-service"
+
+---
+# Workload Entry for external services (if needed)
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: external-database
+  namespace: go-pro
+  labels:
+    app: external-database
+    component: workload-entry
+spec:
+  address: external-db.example.com
+  ports:
+    postgres: 5432
+  labels:
+    app: postgres
+    version: external
+
+---
+# Traffic splitting for canary deployments
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: go-pro-backend-canary
+  namespace: go-pro
+  labels:
+    app: go-pro-backend
+    component: canary
+spec:
+  hosts:
+  - go-pro-backend-service
+  http:
+  - match:
+    - headers:
+        canary:
+          exact: "true"
+    route:
+    - destination:
+        host: go-pro-backend-service
+        subset: v2
+      weight: 100
+  - route:
+    - destination:
+        host: go-pro-backend-service
+        subset: v1
+      weight: 90
+    - destination:
+        host: go-pro-backend-service
+        subset: v2
+      weight: 10
+
+---
+# Fault injection for testing
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: go-pro-fault-injection
+  namespace: go-pro
+  labels:
+    app: go-pro
+    component: fault-injection
+spec:
+  hosts:
+  - go-pro-backend-service
+  http:
+  - match:
+    - headers:
+        x-chaos-test:
+          exact: "true"
+    fault:
+      delay:
+        percentage:
+          value: 50
+        fixedDelay: 2s
+      abort:
+        percentage:
+          value: 10
+        httpStatus: 503
+    route:
+    - destination:
+        host: go-pro-backend-service

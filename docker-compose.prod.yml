@@ -1,0 +1,283 @@
+# Docker Compose for GO-PRO production environment
+version: '3.8'
+
+services:
+  # Backend API service
+  go-pro-backend:
+    image: ghcr.io/your-org/go-pro:latest
+    container_name: go-pro-backend-prod
+    ports:
+      - "8080:8080"
+    environment:
+      - GO_ENV=production
+      - PORT=8080
+      - LOG_LEVEL=info
+      - DATABASE_URL=postgres://gopro_user:${POSTGRES_PASSWORD}@postgres:5432/gopro_prod?sslmode=require
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - go-pro-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: go-pro-redis-prod
+    volumes:
+      - redis-data:/data
+      - ./config/redis-prod.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - go-pro-prod
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: go-pro-postgres-prod
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    environment:
+      - POSTGRES_DB=gopro_prod
+      - POSTGRES_USER=gopro_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    networks:
+      - go-pro-prod
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gopro_user -d gopro_prod"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: go-pro-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+    networks:
+      - go-pro-prod
+    depends_on:
+      - go-pro-backend
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: go-pro-prometheus-prod
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus-prod.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.external-url=http://localhost:9090'
+    networks:
+      - go-pro-prod
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Node Exporter for system metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: go-pro-node-exporter-prod
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - go-pro-prod
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 64M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # Log aggregation
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: go-pro-loki-prod
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config/loki-prod.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    networks:
+      - go-pro-prod
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Log shipping
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: go-pro-promtail-prod
+    volumes:
+      - ./config/promtail-prod.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - go-pro-prod
+    depends_on:
+      - loki
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+networks:
+  go-pro-prod:
+    driver: bridge
+    name: go-pro-prod-network
+
+volumes:
+  postgres-data:
+    name: go-pro-postgres-data-prod
+  redis-data:
+    name: go-pro-redis-data-prod
+  prometheus-data:
+    name: go-pro-prometheus-data-prod
+  loki-data:
+    name: go-pro-loki-data-prod
+  nginx-logs:
+    name: go-pro-nginx-logs-prod

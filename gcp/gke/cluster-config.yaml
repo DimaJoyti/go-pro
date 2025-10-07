@@ -1,0 +1,190 @@
+# GKE Cluster Configuration for GO-PRO
+# This file documents the GKE cluster configuration
+# Use gcloud commands or Terraform to create the cluster
+
+# Cluster Configuration
+cluster:
+  name: gopro-dev-cluster
+  region: us-central1
+  releaseChannel: REGULAR  # RAPID, REGULAR, or STABLE
+  kubernetesVersion: "1.28"
+  
+  # Network Configuration
+  network:
+    name: gopro-vpc
+    subnetwork: gopro-subnet
+    enableIPAlias: true
+    clusterSecondaryRangeName: pods
+    servicesSecondaryRangeName: services
+    
+  # Private Cluster Configuration
+  privateCluster:
+    enablePrivateNodes: true
+    enablePrivateEndpoint: false
+    masterIPv4CidrBlock: 172.16.0.0/28
+    
+  # Master Authorized Networks
+  masterAuthorizedNetworks:
+    enabled: true
+    cidrBlocks:
+      - displayName: "Office Network"
+        cidrBlock: "0.0.0.0/0"  # Replace with your IP range
+  
+  # Addons
+  addons:
+    httpLoadBalancing: true
+    horizontalPodAutoscaling: true
+    networkPolicy: true
+    gcePersistentDiskCsiDriver: true
+    gcpFilestoreCsiDriver: false
+    dnsCacheConfig: true
+    configConnector: false
+    
+  # Workload Identity
+  workloadIdentityConfig:
+    workloadPool: gopro-project.svc.id.goog
+    
+  # Binary Authorization
+  binaryAuthorization:
+    enabled: false  # Enable for production
+    
+  # Logging & Monitoring
+  loggingService: logging.googleapis.com/kubernetes
+  monitoringService: monitoring.googleapis.com/kubernetes
+  
+  # Maintenance Window
+  maintenancePolicy:
+    window:
+      dailyMaintenanceWindow:
+        startTime: "03:00"  # 3 AM UTC
+        
+  # Resource Labels
+  resourceLabels:
+    environment: development
+    project: gopro
+    managed-by: terraform
+    
+  # Network Policy
+  networkPolicy:
+    enabled: true
+    provider: CALICO
+
+# Node Pool Configuration
+nodePools:
+  - name: default-pool
+    initialNodeCount: 2
+    
+    # Autoscaling
+    autoscaling:
+      enabled: true
+      minNodeCount: 1
+      maxNodeCount: 5
+      
+    # Node Configuration
+    config:
+      machineType: e2-medium
+      diskSizeGb: 50
+      diskType: pd-standard
+      imageType: COS_CONTAINERD
+      
+      # Preemptible nodes for cost savings (dev only)
+      preemptible: false
+      
+      # OAuth Scopes
+      oauthScopes:
+        - https://www.googleapis.com/auth/cloud-platform
+        
+      # Metadata
+      metadata:
+        disable-legacy-endpoints: "true"
+        
+      # Labels
+      labels:
+        environment: development
+        pool: default
+        
+      # Taints (optional)
+      taints: []
+      
+      # Shielded Instance Config
+      shieldedInstanceConfig:
+        enableSecureBoot: true
+        enableIntegrityMonitoring: true
+        
+      # Workload Metadata Config
+      workloadMetadataConfig:
+        mode: GKE_METADATA
+        
+    # Management
+    management:
+      autoUpgrade: true
+      autoRepair: true
+      
+  # Additional node pool for production workloads
+  - name: production-pool
+    initialNodeCount: 3
+    
+    autoscaling:
+      enabled: true
+      minNodeCount: 2
+      maxNodeCount: 10
+      
+    config:
+      machineType: n2-standard-4
+      diskSizeGb: 100
+      diskType: pd-ssd
+      imageType: COS_CONTAINERD
+      
+      oauthScopes:
+        - https://www.googleapis.com/auth/cloud-platform
+        
+      labels:
+        environment: production
+        pool: production
+        
+      taints:
+        - key: workload
+          value: production
+          effect: NoSchedule
+          
+      shieldedInstanceConfig:
+        enableSecureBoot: true
+        enableIntegrityMonitoring: true
+        
+    management:
+      autoUpgrade: true
+      autoRepair: true
+
+# gcloud command to create cluster
+# gcloud container clusters create gopro-dev-cluster \
+#   --region us-central1 \
+#   --release-channel regular \
+#   --cluster-version 1.28 \
+#   --network gopro-vpc \
+#   --subnetwork gopro-subnet \
+#   --enable-ip-alias \
+#   --enable-private-nodes \
+#   --master-ipv4-cidr 172.16.0.0/28 \
+#   --enable-master-authorized-networks \
+#   --master-authorized-networks 0.0.0.0/0 \
+#   --addons HorizontalPodAutoscaling,HttpLoadBalancing,GcePersistentDiskCsiDriver \
+#   --workload-pool gopro-project.svc.id.goog \
+#   --enable-stackdriver-kubernetes \
+#   --enable-cloud-logging \
+#   --enable-cloud-monitoring \
+#   --enable-autorepair \
+#   --enable-autoupgrade \
+#   --num-nodes 2 \
+#   --min-nodes 1 \
+#   --max-nodes 5 \
+#   --machine-type e2-medium \
+#   --disk-size 50 \
+#   --disk-type pd-standard \
+#   --image-type COS_CONTAINERD \
+#   --enable-shielded-nodes \
+#   --shielded-secure-boot \
+#   --shielded-integrity-monitoring \
+#   --maintenance-window-start 2024-01-01T03:00:00Z \
+#   --maintenance-window-duration 4h \
+#   --labels environment=development,project=gopro,managed-by=gcloud
+

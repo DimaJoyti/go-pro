@@ -1,0 +1,241 @@
+# Docker Security Configuration for GO-PRO
+# This file contains security best practices and configurations for Docker containers
+
+# Security scanning configuration
+security:
+  # Image scanning
+  image_scanning:
+    enabled: true
+    tools:
+      - trivy
+      - grype
+      - snyk
+    severity_threshold: "HIGH"
+    fail_on_critical: true
+    
+  # Runtime security
+  runtime:
+    # AppArmor profiles
+    apparmor:
+      enabled: true
+      profiles:
+        go-pro-backend: "docker-default"
+        postgres: "docker-default"
+        redis: "docker-default"
+    
+    # SELinux labels
+    selinux:
+      enabled: false  # Enable if using SELinux
+      labels:
+        go-pro-backend: "system_u:object_r:container_file_t:s0"
+    
+    # Seccomp profiles
+    seccomp:
+      enabled: true
+      profiles:
+        go-pro-backend: "default.json"
+        postgres: "default.json"
+        redis: "default.json"
+
+# Container security policies
+container_policies:
+  # Resource limits
+  resources:
+    memory_limit: "512M"
+    cpu_limit: "1.0"
+    pids_limit: 100
+    
+  # Security options
+  security_opts:
+    - "no-new-privileges:true"
+    - "apparmor:docker-default"
+    
+  # Capabilities
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE  # Only if needed for binding to privileged ports
+      
+  # User configuration
+  user:
+    run_as_non_root: true
+    uid: 1001
+    gid: 1001
+    
+  # Filesystem
+  filesystem:
+    read_only_root: true
+    tmpfs_mounts:
+      - "/tmp:noexec,nosuid,size=100m"
+      - "/var/tmp:noexec,nosuid,size=50m"
+    
+  # Network security
+  network:
+    no_new_privileges: true
+    user_namespace: true
+    
+# Dockerfile security best practices
+dockerfile_security:
+  base_images:
+    # Preferred base images (in order of preference)
+    - "gcr.io/distroless/static-debian12:nonroot"  # Most secure
+    - "alpine:3.19"                                # Minimal attack surface
+    - "ubuntu:22.04"                              # If full OS needed
+    
+  # Security checks
+  checks:
+    - name: "No root user"
+      description: "Container should not run as root"
+      rule: "USER should not be root or 0"
+      
+    - name: "Minimal base image"
+      description: "Use minimal base images"
+      rule: "FROM should use distroless or alpine"
+      
+    - name: "No secrets in layers"
+      description: "No secrets should be in image layers"
+      rule: "No ARG or ENV with passwords/keys"
+      
+    - name: "Health check present"
+      description: "Container should have health check"
+      rule: "HEALTHCHECK instruction should be present"
+      
+    - name: "Non-privileged port"
+      description: "Should not expose privileged ports"
+      rule: "EXPOSE should not use ports < 1024"
+      
+    - name: "Specific version tags"
+      description: "Base images should use specific versions"
+      rule: "FROM should not use 'latest' tag"
+
+# Network security
+network_security:
+  # Network policies
+  policies:
+    - name: "backend-isolation"
+      description: "Backend can only communicate with database and cache"
+      rules:
+        - allow: "postgres:5432"
+        - allow: "redis:6379"
+        - allow: "kafka:9092"
+        - deny: "*"
+        
+    - name: "database-isolation"
+      description: "Database only accepts connections from backend"
+      rules:
+        - allow: "go-pro-backend"
+        - deny: "*"
+        
+  # TLS configuration
+  tls:
+    enabled: true
+    min_version: "1.2"
+    ciphers:
+      - "ECDHE-RSA-AES256-GCM-SHA384"
+      - "ECDHE-RSA-AES128-GCM-SHA256"
+      
+# Secrets management
+secrets:
+  # External secrets management
+  external:
+    enabled: true
+    providers:
+      - "kubernetes-secrets"
+      - "vault"
+      - "aws-secrets-manager"
+      - "azure-key-vault"
+      
+  # Docker secrets
+  docker_secrets:
+    enabled: true
+    secrets:
+      - name: "postgres_password"
+        file: "/run/secrets/postgres_password"
+      - name: "redis_password"
+        file: "/run/secrets/redis_password"
+      - name: "jwt_secret"
+        file: "/run/secrets/jwt_secret"
+        
+# Monitoring and logging
+monitoring:
+  # Security monitoring
+  security_monitoring:
+    enabled: true
+    tools:
+      - "falco"
+      - "sysdig"
+      - "aqua"
+      
+  # Log security
+  logging:
+    # Prevent log injection
+    sanitize_logs: true
+    # Log security events
+    security_events: true
+    # Centralized logging
+    centralized: true
+    destination: "elasticsearch"
+    
+# Compliance
+compliance:
+  standards:
+    - "CIS Docker Benchmark"
+    - "NIST Cybersecurity Framework"
+    - "PCI DSS"
+    - "SOC 2"
+    
+  # Automated compliance checking
+  automated_checks:
+    enabled: true
+    tools:
+      - "docker-bench-security"
+      - "kube-bench"
+      - "polaris"
+      
+# Incident response
+incident_response:
+  # Automated response
+  automated:
+    enabled: true
+    actions:
+      - "isolate_container"
+      - "collect_forensics"
+      - "alert_security_team"
+      
+  # Manual response procedures
+  procedures:
+    - name: "Container compromise"
+      steps:
+        - "Isolate affected container"
+        - "Collect container logs and filesystem"
+        - "Analyze network traffic"
+        - "Check for lateral movement"
+        - "Update security policies"
+        
+# Security testing
+security_testing:
+  # Static analysis
+  static_analysis:
+    enabled: true
+    tools:
+      - "hadolint"  # Dockerfile linting
+      - "dockle"    # Container image security
+      - "clair"     # Vulnerability scanning
+      
+  # Dynamic analysis
+  dynamic_analysis:
+    enabled: true
+    tools:
+      - "docker-bench-security"
+      - "anchore"
+      - "twistlock"
+      
+  # Penetration testing
+  penetration_testing:
+    frequency: "quarterly"
+    scope:
+      - "container_escape"
+      - "privilege_escalation"
+      - "network_segmentation"
+      - "secrets_exposure"

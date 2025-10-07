@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Test PostgreSQL Database
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: gopro-postgres-test
+    environment:
+      POSTGRES_USER: gopro_test
+      POSTGRES_PASSWORD: gopro_test
+      POSTGRES_DB: gopro_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gopro_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Test Redis Cache
+  redis-test:
+    image: redis:7-alpine
+    container_name: gopro-redis-test
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-test-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Test Kafka
+  zookeeper-test:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: gopro-zookeeper-test
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2182
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2182:2182"
+    networks:
+      - test-network
+
+  kafka-test:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: gopro-kafka-test
+    depends_on:
+      - zookeeper-test
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-test:2182
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - test-network
+
+volumes:
+  postgres-test-data:
+    driver: local
+  redis-test-data:
+    driver: local
+
+networks:
+  test-network:
+    driver: bridge

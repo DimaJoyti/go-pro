@@ -1,0 +1,152 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  # Update Go dependencies
+  update-go-deps:
+    name: Update Go Dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - backend
+          - services/shared
+          - services/api-gateway
+          - services/user-service
+          - services/course-service
+          - services/progress-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Update dependencies
+        run: |
+          cd ${{ matrix.module }}
+          go get -u ./...
+          go mod tidy
+
+      - name: Run tests
+        run: |
+          cd ${{ matrix.module }}
+          go test ./...
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update Go dependencies in ${{ matrix.module }}'
+          title: 'chore: update Go dependencies in ${{ matrix.module }}'
+          body: |
+            Automated dependency update for ${{ matrix.module }}
+            
+            - Updated all Go dependencies to latest versions
+            - All tests passing
+            
+            Please review and merge if appropriate.
+          branch: deps/go-${{ matrix.module }}
+          labels: dependencies, automated
+
+  # Update npm dependencies
+  update-npm-deps:
+    name: Update npm Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Update dependencies
+        run: |
+          cd frontend
+          npm update
+          npm audit fix
+
+      - name: Run tests
+        run: |
+          cd frontend
+          npm test
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update npm dependencies'
+          title: 'chore: update npm dependencies'
+          body: |
+            Automated dependency update for frontend
+            
+            - Updated all npm dependencies to latest versions
+            - Applied security fixes
+            - All tests passing
+            
+            Please review and merge if appropriate.
+          branch: deps/npm-frontend
+          labels: dependencies, automated
+
+  # Update Terraform providers
+  update-terraform:
+    name: Update Terraform Providers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.0'
+
+      - name: Update providers
+        run: |
+          cd terraform
+          terraform init -upgrade
+
+      - name: Validate
+        run: |
+          cd terraform
+          terraform validate
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update Terraform providers'
+          title: 'chore: update Terraform providers'
+          body: |
+            Automated Terraform provider update
+            
+            - Updated all Terraform providers to latest versions
+            - Configuration validated
+            
+            Please review and merge if appropriate.
+          branch: deps/terraform-providers
+          labels: dependencies, automated, terraform
+
+  # Update GitHub Actions
+  update-actions:
+    name: Update GitHub Actions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update actions
+        uses: renovatebot/github-action@v39.2.3
+        with:
+          configurationFile: .github/renovate.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+

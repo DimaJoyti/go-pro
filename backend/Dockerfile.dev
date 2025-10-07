@@ -1,0 +1,188 @@
+# Development-optimized Docker build for Go application
+# This Dockerfile is optimized for development with hot reload and debugging capabilities
+
+FROM golang:1.25-alpine AS development
+
+# Install development dependencies and tools
+RUN apk add --no-cache \
+    ca-certificates \
+    git \
+    tzdata \
+    curl \
+    wget \
+    bash \
+    make \
+    gcc \
+    musl-dev \
+    && update-ca-certificates
+
+# Install development tools
+RUN go install github.com/cosmtrek/air@latest && \
+    go install github.com/go-delve/delve/cmd/dlv@latest && \
+    go install golang.org/x/tools/cmd/goimports@latest && \
+    go install golang.org/x/lint/golint@latest && \
+    go install honnef.co/go/tools/cmd/staticcheck@latest
+
+# Create app directory
+WORKDIR /app
+
+# Copy dependency files first for better caching
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Create air configuration for hot reload
+RUN echo '[build]\n\
+  cmd = "go build -o ./tmp/main ./cmd/server/main.go"\n\
+  bin = "tmp/main"\n\
+  full_bin = "APP_ENV=dev APP_USER=air ./tmp/main"\n\
+  include_ext = ["go", "tpl", "tmpl", "html"]\n\
+  exclude_dir = ["assets", "tmp", "vendor", "testdata"]\n\
+  include_dir = []\n\
+  exclude_file = []\n\
+  exclude_regex = ["_test.go"]\n\
+  exclude_unchanged = false\n\
+  follow_symlink = false\n\
+  log = "build-errors.log"\n\
+  delay = 1000\n\
+  stop_on_error = true\n\
+  send_interrupt = false\n\
+  kill_delay = "0s"\n\
+\n\
+[color]\n\
+  main = "magenta"\n\
+  watcher = "cyan"\n\
+  build = "yellow"\n\
+  runner = "green"\n\
+\n\
+[log]\n\
+  time = false\n\
+\n\
+[misc]\n\
+  clean_on_exit = false' > .air.toml
+
+# Create development user
+RUN addgroup -g 1001 -S devgroup && \
+    adduser -u 1001 -G devgroup -s /bin/bash -D -S devuser
+
+# Set ownership
+RUN chown -R devuser:devgroup /app && \
+    chown -R devuser:devgroup /go
+
+# Switch to development user
+USER devuser
+
+# Expose port and debugging port
+EXPOSE 8080 2345
+
+# Environment variables for development
+ENV PORT=8080
+ENV GO_ENV=development
+ENV CGO_ENABLED=1
+
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/api/v1/health || exit 1
+
+# Default command for development (hot reload)
+CMD ["air", "-c", ".air.toml"]
+
+# Alternative commands:
+# For debugging: CMD ["dlv", "debug", "./cmd/server/main.go", "--headless", "--listen=:2345", "--api-version=2", "--accept-multiclient"]
+# For normal run: CMD ["go", "run", "./cmd/server/main.go"]
+# For testing: CMD ["go", "test", "-v", "./..."]
+
+# Development stage with debugging capabilities
+FROM development AS debug
+
+# Switch back to root to install additional debug tools
+USER root
+
+# Install additional debugging tools
+RUN apk add --no-cache \
+    strace \
+    ltrace \
+    gdb \
+    valgrind
+
+# Install Go debugging and profiling tools
+RUN go install github.com/google/pprof@latest && \
+    go install golang.org/x/tools/cmd/godoc@latest
+
+# Switch back to development user
+USER devuser
+
+# Expose additional debugging ports
+EXPOSE 8080 2345 6060
+
+# Environment variables for debugging
+ENV GODEBUG=gctrace=1
+ENV GOMAXPROCS=1
+
+# Command for debugging
+CMD ["dlv", "debug", "./cmd/server/main.go", "--headless", "--listen=:2345", "--api-version=2", "--accept-multiclient", "--"]
+
+# Testing stage for running tests in development
+FROM development AS test
+
+# Switch back to root for test setup
+USER root
+
+# Install test dependencies
+RUN apk add --no-cache \
+    docker-cli \
+    docker-compose
+
+# Install Go test tools
+RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest && \
+    go install github.com/onsi/gomega/...@latest && \
+    go install gotest.tools/gotestsum@latest
+
+# Switch back to development user
+USER devuser
+
+# Environment variables for testing
+ENV GO_ENV=test
+ENV TEST_DATABASE_URL=postgres://test:test@localhost:5432/test_db
+
+# Command for running tests
+CMD ["gotestsum", "--format", "testname", "./..."]
+
+# Linting stage for code quality checks
+FROM development AS lint
+
+# Switch back to root for linting setup
+USER root
+
+# Install linting tools
+RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
+    go install github.com/securecodewarrior/sast-scan@latest
+
+# Switch back to development user
+USER devuser
+
+# Command for linting
+CMD ["golangci-lint", "run", "./..."]
+
+# Documentation stage for generating docs
+FROM development AS docs
+
+# Switch back to root for docs setup
+USER root
+
+# Install documentation tools
+RUN go install golang.org/x/tools/cmd/godoc@latest && \
+    go install github.com/swaggo/swag/cmd/swag@latest
+
+# Switch back to development user
+USER devuser
+
+# Expose documentation port
+EXPOSE 6060
+
+# Command for serving documentation
+CMD ["godoc", "-http=:6060"]
