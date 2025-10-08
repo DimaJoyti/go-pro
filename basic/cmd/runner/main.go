@@ -44,16 +44,16 @@ var projects = []Example{
 func main() {
 	clearScreen()
 	printBanner()
-	
+
 	for {
 		printMenu()
 		choice := getUserInput()
-		
+
 		if choice == "q" || choice == "quit" || choice == "exit" {
 			fmt.Println("\n👋 Thanks for learning Go! Happy coding!")
 			break
 		}
-		
+
 		handleChoice(choice)
 	}
 }
@@ -74,23 +74,23 @@ func printMenu() {
 	fmt.Println("📚 MAIN MENU")
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println()
-	
+
 	fmt.Println("📖 Examples:")
 	for _, ex := range examples {
 		fmt.Printf("  [%2d] %-20s - %s\n", ex.ID, ex.Name, ex.Description)
 	}
-	
+
 	fmt.Println("\n🎯 Projects:")
 	for _, proj := range projects {
 		fmt.Printf("  [p%d] %-20s - %s\n", proj.ID, proj.Name, proj.Description)
 	}
-	
+
 	fmt.Println("\n⚙️  Options:")
 	fmt.Println("  [a]  Run all examples")
 	fmt.Println("  [t]  Run tests")
 	fmt.Println("  [h]  Show help")
 	fmt.Println("  [q]  Quit")
-	
+
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Print("\n👉 Enter your choice: ")
 }
@@ -103,7 +103,7 @@ func getUserInput() string {
 
 func handleChoice(choice string) {
 	clearScreen()
-	
+
 	switch choice {
 	case "a":
 		runAllExamples()
@@ -129,7 +129,7 @@ func handleChoice(choice string) {
 			}
 		}
 	}
-	
+
 	fmt.Print("\n\nPress Enter to continue...")
 	bufio.NewReader(os.Stdin).ReadString('\n')
 	clearScreen()
@@ -141,7 +141,7 @@ func runExample(id int) {
 			fmt.Printf("🚀 Running: %s\n", ex.Name)
 			fmt.Println(strings.Repeat("=", 60))
 			fmt.Println()
-			
+
 			runGoFile(ex.Path)
 			return
 		}
@@ -155,7 +155,7 @@ func runProject(id int) {
 			fmt.Printf("🎯 Running Project: %s\n", proj.Name)
 			fmt.Println(strings.Repeat("=", 60))
 			fmt.Println()
-			
+
 			runGoFile(proj.Path)
 			return
 		}
@@ -167,7 +167,7 @@ func runAllExamples() {
 	fmt.Println("🚀 Running All Examples")
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println()
-	
+
 	for _, ex := range examples {
 		fmt.Printf("\n📖 %d. %s\n", ex.ID, ex.Name)
 		fmt.Println(strings.Repeat("-", 60))
@@ -180,12 +180,12 @@ func runTests() {
 	fmt.Println("🧪 Running Tests")
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println()
-	
+
 	cmd := exec.Command("go", "test", "./...")
 	cmd.Dir = getBasicDir()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("❌ Tests failed: %v\n", err)
 	} else {
@@ -216,19 +216,19 @@ func showHelp() {
 func runGoFile(relativePath string) {
 	basicDir := getBasicDir()
 	fullPath := filepath.Join(basicDir, relativePath)
-	
+
 	// Check if main.go exists
 	mainFile := filepath.Join(fullPath, "main.go")
 	if _, err := os.Stat(mainFile); os.IsNotExist(err) {
 		fmt.Printf("⚠️  Example not yet implemented: %s\n", relativePath)
 		return
 	}
-	
+
 	cmd := exec.Command("go", "run", "main.go")
 	cmd.Dir = fullPath
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("❌ Error running example: %v\n", err)
 	}
@@ -252,4 +252,3 @@ func clearScreen() {
 		cmd.Run()
 	}
 }
-

@@ -27,11 +27,11 @@ const (
 	EventLessonDeleted EventType = "lesson.deleted"
 
 	// Progress Events
-	EventProgressUpdated    EventType = "progress.updated"
-	EventLessonStarted      EventType = "progress.lesson_started"
-	EventLessonCompleted    EventType = "progress.lesson_completed"
-	EventCourseStarted      EventType = "progress.course_started"
-	EventCourseCompleted    EventType = "progress.course_completed"
+	EventProgressUpdated     EventType = "progress.updated"
+	EventLessonStarted       EventType = "progress.lesson_started"
+	EventLessonCompleted     EventType = "progress.lesson_completed"
+	EventCourseStarted       EventType = "progress.course_started"
+	EventCourseCompleted     EventType = "progress.course_completed"
 	EventAchievementUnlocked EventType = "progress.achievement_unlocked"
 
 	// Notification Events
@@ -216,4 +216,3 @@ type EventStore interface {
 	GetByAggregateID(aggregateID string) ([]*Event, error)
 	GetByType(eventType EventType, limit int) ([]*Event, error)
 }
-

@@ -128,12 +128,12 @@ func (o *Order) PrintDetails() {
 	fmt.Printf("║ Updated:     %-45s ║\n", o.UpdatedAt.Format("2006-01-02 15:04:05"))
 	fmt.Println("╠════════════════════════════════════════════════════════════╣")
 	fmt.Println("║ Items:                                                     ║")
-	
+
 	for i, item := range o.Items {
 		fmt.Printf("║ %2d. %-20s Qty: %3d  $%8.2f  $%8.2f ║\n",
 			i+1, item.Name, item.Quantity, item.Price, float64(item.Quantity)*item.Price)
 	}
-	
+
 	fmt.Println("╠════════════════════════════════════════════════════════════╣")
 	fmt.Printf("║ Total:                                          $%9.2f ║\n", o.Total)
 	fmt.Println("╚════════════════════════════════════════════════════════════╝")
@@ -280,4 +280,3 @@ func main() {
 
 	fmt.Println("✨ Demo completed!")
 }
-

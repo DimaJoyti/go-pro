@@ -48,7 +48,7 @@ func MultipleReturns(x, y float64) (float64, float64, float64, float64) {
 func NamedReturns(length, width float64) (area, perimeter float64) {
 	// TODO: Calculate area and perimeter using named returns
 	// Use naked return at the end
-	
+
 	// Replace this return statement with your implementation and naked return
 	return 0.0, 0.0
 }

@@ -21,27 +21,27 @@ import (
 
 // TracingConfig holds the configuration for OpenTelemetry tracing
 type TracingConfig struct {
-	ServiceName       string
-	ServiceVersion    string
-	Environment       string
-	OTLPEndpoint      string
-	SamplingRate      float64
-	EnableConsole     bool
+	ServiceName        string
+	ServiceVersion     string
+	Environment        string
+	OTLPEndpoint       string
+	SamplingRate       float64
+	EnableConsole      bool
 	MaxExportBatchSize int
-	MaxQueueSize      int
+	MaxQueueSize       int
 }
 
 // DefaultTracingConfig returns a default tracing configuration
 func DefaultTracingConfig(serviceName string) *TracingConfig {
 	return &TracingConfig{
-		ServiceName:       serviceName,
-		ServiceVersion:    getEnv("SERVICE_VERSION", "1.0.0"),
-		Environment:       getEnv("ENVIRONMENT", "development"),
-		OTLPEndpoint:      getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317"),
-		SamplingRate:      0.1, // Sample 10% of traces by default
-		EnableConsole:     getEnv("ENVIRONMENT", "development") == "development",
+		ServiceName:        serviceName,
+		ServiceVersion:     getEnv("SERVICE_VERSION", "1.0.0"),
+		Environment:        getEnv("ENVIRONMENT", "development"),
+		OTLPEndpoint:       getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317"),
+		SamplingRate:       0.1, // Sample 10% of traces by default
+		EnableConsole:      getEnv("ENVIRONMENT", "development") == "development",
 		MaxExportBatchSize: 512,
-		MaxQueueSize:      2048,
+		MaxQueueSize:       2048,
 	}
 }
 
@@ -80,7 +80,7 @@ func InitTracingWithConfig(config *TracingConfig) (func(), error) {
 
 	// Create trace provider with sampling
 	sampler := createSampler(config.SamplingRate)
-	
+
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithResource(res),
 		sdktrace.WithBatcher(traceExporter,
@@ -222,12 +222,12 @@ func getInstanceID() string {
 	if id := os.Getenv("INSTANCE_ID"); id != "" {
 		return id
 	}
-	
+
 	// Try to get hostname
 	if hostname, err := os.Hostname(); err == nil {
 		return hostname
 	}
-	
+
 	return "unknown"
 }
 
@@ -247,7 +247,7 @@ func NewTracingMiddleware(serviceName string) *TracingMiddleware {
 func (m *TracingMiddleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		
+
 		// Start span
 		ctx, span := StartSpan(ctx, r.Method+" "+r.URL.Path,
 			trace.WithSpanKind(trace.SpanKindServer),
@@ -260,18 +260,18 @@ func (m *TracingMiddleware) Handler(next http.Handler) http.Handler {
 			),
 		)
 		defer span.End()
-		
+
 		// Create response writer wrapper to capture status code
 		rw := &responseWriter{ResponseWriter: w, statusCode: 200}
-		
+
 		// Call next handler
 		next.ServeHTTP(rw, r.WithContext(ctx))
-		
+
 		// Add response attributes
 		span.SetAttributes(
 			semconv.HTTPStatusCode(rw.statusCode),
 		)
-		
+
 		// Set span status based on HTTP status code
 		if rw.statusCode >= 400 {
 			span.SetStatus(trace.StatusError, fmt.Sprintf("HTTP %d", rw.statusCode))
@@ -341,4 +341,3 @@ func (rw *responseWriter) WriteHeader(code int) {
 //
 //     json.NewEncoder(w).Encode(users)
 // }
-

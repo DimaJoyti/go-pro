@@ -297,7 +297,7 @@ func (r *LessonRepository) GetAll(ctx context.Context, pagination *domain.Pagina
 // getNextLessonOrder gets the next lesson order number for a course
 func (r *LessonRepository) getNextLessonOrder(ctx context.Context, courseID string) (int, error) {
 	query := "SELECT COALESCE(MAX(lesson_order), 0) + 1 FROM gopro.lessons WHERE course_id = $1"
-	
+
 	var nextOrder int
 	err := r.db.QueryRowContext(ctx, query, courseID).Scan(&nextOrder)
 	if err != nil {

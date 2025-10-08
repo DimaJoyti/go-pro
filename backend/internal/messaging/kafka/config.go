@@ -6,78 +6,78 @@ import (
 
 // Config holds Kafka configuration
 type Config struct {
-	Brokers              []string
-	GroupID              string
-	ClientID             string
-	SecurityProtocol     string
-	SASLMechanism        string
-	SASLUsername         string
-	SASLPassword         string
-	EnableAutoCommit     bool
-	AutoCommitInterval   time.Duration
-	SessionTimeout       time.Duration
-	HeartbeatInterval    time.Duration
-	MaxPollRecords       int
-	FetchMinBytes        int
-	FetchMaxWait         time.Duration
-	RetryBackoff         time.Duration
-	ReconnectBackoff     time.Duration
-	MaxRetries           int
-	RequestTimeout       time.Duration
-	MetadataRefreshFreq  time.Duration
-	EnableIdempotence    bool
-	Acks                 string
-	CompressionType      string
-	BatchSize            int
-	LingerMs             time.Duration
-	BufferMemory         int64
-	MaxBlockMs           time.Duration
-	MaxRequestSize       int
-	ReceiveBufferBytes   int
-	SendBufferBytes      int
+	Brokers             []string
+	GroupID             string
+	ClientID            string
+	SecurityProtocol    string
+	SASLMechanism       string
+	SASLUsername        string
+	SASLPassword        string
+	EnableAutoCommit    bool
+	AutoCommitInterval  time.Duration
+	SessionTimeout      time.Duration
+	HeartbeatInterval   time.Duration
+	MaxPollRecords      int
+	FetchMinBytes       int
+	FetchMaxWait        time.Duration
+	RetryBackoff        time.Duration
+	ReconnectBackoff    time.Duration
+	MaxRetries          int
+	RequestTimeout      time.Duration
+	MetadataRefreshFreq time.Duration
+	EnableIdempotence   bool
+	Acks                string
+	CompressionType     string
+	BatchSize           int
+	LingerMs            time.Duration
+	BufferMemory        int64
+	MaxBlockMs          time.Duration
+	MaxRequestSize      int
+	ReceiveBufferBytes  int
+	SendBufferBytes     int
 }
 
 // DefaultConfig returns a default Kafka configuration
 func DefaultConfig() *Config {
 	return &Config{
-		Brokers:              []string{"localhost:9092"},
-		GroupID:              "go-pro-consumer-group",
-		ClientID:             "go-pro-client",
-		SecurityProtocol:     "PLAINTEXT",
-		EnableAutoCommit:     true,
-		AutoCommitInterval:   1 * time.Second,
-		SessionTimeout:       30 * time.Second,
-		HeartbeatInterval:    3 * time.Second,
-		MaxPollRecords:       500,
-		FetchMinBytes:        1,
-		FetchMaxWait:         500 * time.Millisecond,
-		RetryBackoff:         100 * time.Millisecond,
-		ReconnectBackoff:     50 * time.Millisecond,
-		MaxRetries:           3,
-		RequestTimeout:       30 * time.Second,
-		MetadataRefreshFreq:  5 * time.Minute,
-		EnableIdempotence:    true,
-		Acks:                 "all",
-		CompressionType:      "snappy",
-		BatchSize:            16384,
-		LingerMs:             5 * time.Millisecond,
-		BufferMemory:         33554432, // 32MB
-		MaxBlockMs:           60 * time.Second,
-		MaxRequestSize:       1048576, // 1MB
-		ReceiveBufferBytes:   65536,   // 64KB
-		SendBufferBytes:      131072,  // 128KB
+		Brokers:             []string{"localhost:9092"},
+		GroupID:             "go-pro-consumer-group",
+		ClientID:            "go-pro-client",
+		SecurityProtocol:    "PLAINTEXT",
+		EnableAutoCommit:    true,
+		AutoCommitInterval:  1 * time.Second,
+		SessionTimeout:      30 * time.Second,
+		HeartbeatInterval:   3 * time.Second,
+		MaxPollRecords:      500,
+		FetchMinBytes:       1,
+		FetchMaxWait:        500 * time.Millisecond,
+		RetryBackoff:        100 * time.Millisecond,
+		ReconnectBackoff:    50 * time.Millisecond,
+		MaxRetries:          3,
+		RequestTimeout:      30 * time.Second,
+		MetadataRefreshFreq: 5 * time.Minute,
+		EnableIdempotence:   true,
+		Acks:                "all",
+		CompressionType:     "snappy",
+		BatchSize:           16384,
+		LingerMs:            5 * time.Millisecond,
+		BufferMemory:        33554432, // 32MB
+		MaxBlockMs:          60 * time.Second,
+		MaxRequestSize:      1048576, // 1MB
+		ReceiveBufferBytes:  65536,   // 64KB
+		SendBufferBytes:     131072,  // 128KB
 	}
 }
 
 // Topics defines the Kafka topics used by the application
 type Topics struct {
-	UserEvents        string
-	CourseEvents      string
-	LessonEvents      string
-	ExerciseEvents    string
-	ProgressEvents    string
+	UserEvents         string
+	CourseEvents       string
+	LessonEvents       string
+	ExerciseEvents     string
+	ProgressEvents     string
 	NotificationEvents string
-	AuditEvents       string
+	AuditEvents        string
 }
 
 // DefaultTopics returns the default topic configuration
@@ -124,8 +124,8 @@ const (
 	ExerciseCompleted EventType = "exercise.completed"
 
 	// Progress events
-	ProgressStarted EventType = "progress.started"
-	ProgressUpdated EventType = "progress.updated"
+	ProgressStarted   EventType = "progress.started"
+	ProgressUpdated   EventType = "progress.updated"
 	ProgressCompleted EventType = "progress.completed"
 
 	// Notification events
@@ -181,23 +181,23 @@ type ExerciseEvent struct {
 // ProgressEvent represents progress-related events
 type ProgressEvent struct {
 	Event
-	UserID     string `json:"user_id"`
-	LessonID   string `json:"lesson_id"`
-	CourseID   string `json:"course_id"`
-	Completed  bool   `json:"completed"`
-	Score      int    `json:"score"`
-	TimeSpent  int    `json:"time_spent_seconds"`
+	UserID    string `json:"user_id"`
+	LessonID  string `json:"lesson_id"`
+	CourseID  string `json:"course_id"`
+	Completed bool   `json:"completed"`
+	Score     int    `json:"score"`
+	TimeSpent int    `json:"time_spent_seconds"`
 }
 
 // NotificationEvent represents notification-related events
 type NotificationEvent struct {
 	Event
-	UserID      string `json:"user_id"`
-	Title       string `json:"title"`
-	Message     string `json:"message"`
-	Type        string `json:"notification_type"`
-	Channel     string `json:"channel"`
-	Priority    string `json:"priority"`
+	UserID   string `json:"user_id"`
+	Title    string `json:"title"`
+	Message  string `json:"message"`
+	Type     string `json:"notification_type"`
+	Channel  string `json:"channel"`
+	Priority string `json:"priority"`
 }
 
 // AuditEvent represents audit log events

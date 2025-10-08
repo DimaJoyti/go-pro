@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/segmentio/kafka-go"
 	"github.com/google/uuid"
+	"github.com/segmentio/kafka-go"
 )
 
 // Producer wraps kafka-go writer with additional functionality
@@ -94,7 +94,7 @@ func (p *Producer) PublishAuditEvent(ctx context.Context, event *AuditEvent) err
 // PublishBatch publishes multiple events in a single batch
 func (p *Producer) PublishBatch(ctx context.Context, events []EventMessage) error {
 	messages := make([]kafka.Message, len(events))
-	
+
 	for i, event := range events {
 		data, err := json.Marshal(event.Data)
 		if err != nil {
@@ -250,9 +250,9 @@ func NewProgressEvent(eventType EventType, userID, lessonID, courseID string, co
 // NewAuditEvent creates a new audit event
 func NewAuditEvent(userID, action, resource, resourceID string, success bool, oldValues, newValues map[string]interface{}) *AuditEvent {
 	data := map[string]interface{}{
-		"action":    action,
-		"resource":  resource,
-		"success":   success,
+		"action":   action,
+		"resource": resource,
+		"success":  success,
 	}
 
 	if oldValues != nil {

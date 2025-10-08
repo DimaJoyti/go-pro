@@ -31,9 +31,9 @@ const (
 
 const (
 	// File permissions using bit operations with iota
-	ReadPermission = 1 << iota // 1 (binary: 001)
-	WritePermission            // 2 (binary: 010)
-	ExecutePermission          // 4 (binary: 100)
+	ReadPermission    = 1 << iota // 1 (binary: 001)
+	WritePermission               // 2 (binary: 010)
+	ExecutePermission             // 4 (binary: 100)
 )
 
 func main() {
@@ -81,8 +81,8 @@ func demonstrateBasicTypes() {
 	var greeting = "Hello, World!" // Type inference
 
 	// Character types
-	var letter byte = 'A'           // byte is alias for uint8
-	var unicodeChar rune = '🚀'     // rune is alias for int32
+	var letter byte = 'A'      // byte is alias for uint8
+	var unicodeChar rune = '🚀' // rune is alias for int32
 
 	// Print all values with their types
 	fmt.Printf("Integer (int): %d\n", age)

@@ -10,12 +10,12 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	Server   ServerConfig
-	Services ServicesConfig
-	Redis    RedisConfig
-	Auth     AuthConfig
+	Server    ServerConfig
+	Services  ServicesConfig
+	Redis     RedisConfig
+	Auth      AuthConfig
 	RateLimit RateLimitConfig
-	Logging  LoggingConfig
+	Logging   LoggingConfig
 }
 
 // ServerConfig holds server configuration
@@ -151,4 +151,3 @@ func getDurationEnv(key string, defaultValue time.Duration) time.Duration {
 	}
 	return defaultValue
 }
-

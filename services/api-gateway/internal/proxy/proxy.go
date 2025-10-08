@@ -263,4 +263,3 @@ func getScheme(r *http.Request) string {
 	}
 	return "http"
 }
-

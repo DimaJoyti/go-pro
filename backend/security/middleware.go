@@ -20,22 +20,22 @@ import (
 type contextKey string
 
 const (
-	UserContextKey contextKey = "user"
+	UserContextKey   contextKey = "user"
 	ClaimsContextKey contextKey = "claims"
 )
 
 // SecurityMiddleware holds all security middleware functions
 type SecurityMiddleware struct {
-	config     *SecurityConfig
-	jwtManager *JWTManager
+	config         *SecurityConfig
+	jwtManager     *JWTManager
 	rateLimitStore *RateLimitStore
 }
 
 // NewSecurityMiddleware creates a new security middleware instance
 func NewSecurityMiddleware(config *SecurityConfig) *SecurityMiddleware {
 	return &SecurityMiddleware{
-		config:     config,
-		jwtManager: NewJWTManager(config.JWT),
+		config:         config,
+		jwtManager:     NewJWTManager(config.JWT),
 		rateLimitStore: NewRateLimitStore(config.RateLimit),
 	}
 }
@@ -374,13 +374,13 @@ func (sm *SecurityMiddleware) writeErrorResponse(w http.ResponseWriter, statusCo
 
 // RateLimitStore implements a token bucket rate limiter
 type RateLimitStore struct {
-	config   RateLimitConfig
-	clients  map[string]*tokenBucket
-	mutex    sync.RWMutex
+	config  RateLimitConfig
+	clients map[string]*tokenBucket
+	mutex   sync.RWMutex
 }
 
 type tokenBucket struct {
-	tokens    int
+	tokens     int
 	lastRefill time.Time
 }
 
@@ -405,7 +405,7 @@ func (rls *RateLimitStore) Allow(clientIP string) bool {
 	bucket, exists := rls.clients[clientIP]
 	if !exists {
 		bucket = &tokenBucket{
-			tokens:    rls.config.RequestsPerMinute,
+			tokens:     rls.config.RequestsPerMinute,
 			lastRefill: time.Now(),
 		}
 		rls.clients[clientIP] = bucket

@@ -185,4 +185,3 @@ func GetUserRole(ctx context.Context) (string, bool) {
 	role, ok := ctx.Value(UserRoleKey).(string)
 	return role, ok
 }
-

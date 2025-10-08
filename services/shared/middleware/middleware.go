@@ -261,4 +261,3 @@ func TracingMiddleware(tracer Tracer) func(http.Handler) http.Handler {
 		})
 	}
 }
-

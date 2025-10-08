@@ -363,7 +363,7 @@ func (r *RedisSessionStore) GetUserSessionCount(ctx context.Context, userID stri
 
 // Helper function to check if string contains substring
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) && 
-		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || 
-		 (len(s) > len(substr) && s[1:len(substr)+1] == substr))))
+	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) &&
+		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
+			(len(s) > len(substr) && s[1:len(substr)+1] == substr))))
 }

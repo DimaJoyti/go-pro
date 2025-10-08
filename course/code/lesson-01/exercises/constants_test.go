@@ -8,9 +8,9 @@ import (
 func TestMathematicalConstants(t *testing.T) {
 	// Test that mathematical constants are defined correctly
 	tests := []struct {
-		name     string
-		constant float64
-		expected float64
+		name      string
+		constant  float64
+		expected  float64
 		tolerance float64
 	}{
 		{"Pi", Pi, 3.14159, 0.00001},
@@ -297,27 +297,27 @@ func TestIsWeekend(t *testing.T) {
 
 func TestCalculateCircleProperties(t *testing.T) {
 	tests := []struct {
-		name            string
-		radius          float64
-		wantArea        float64
+		name              string
+		radius            float64
+		wantArea          float64
 		wantCircumference float64
 	}{
 		{
-			name:            "Unit circle",
-			radius:          1.0,
-			wantArea:        Pi,
+			name:              "Unit circle",
+			radius:            1.0,
+			wantArea:          Pi,
 			wantCircumference: 2 * Pi,
 		},
 		{
-			name:            "Small circle",
-			radius:          2.0,
-			wantArea:        4 * Pi,
+			name:              "Small circle",
+			radius:            2.0,
+			wantArea:          4 * Pi,
 			wantCircumference: 4 * Pi,
 		},
 		{
-			name:            "Large circle",
-			radius:          5.0,
-			wantArea:        25 * Pi,
+			name:              "Large circle",
+			radius:            5.0,
+			wantArea:          25 * Pi,
 			wantCircumference: 10 * Pi,
 		},
 	}

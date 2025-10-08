@@ -249,13 +249,37 @@ Your learning progress is automatically tracked:
 - ✅ **Skill Assessments**: Validate your knowledge at each level
 - ✅ **Achievement Badges**: Earn recognition for your accomplishments
 
+## 📖 Complete Documentation
+
+### 🚀 Getting Started
+- **[Quick Start Guide](QUICK_START.md)** - Get up and running in 5 minutes
+- **[Tutorials](TUTORIALS.md)** - Step-by-step project tutorials
+- **[Learning Paths](LEARNING_PATHS.md)** - Structured learning journeys (4 paths)
+
+### 🏗️ Projects
+- **[Projects Guide](PROJECTS.md)** - Complete guide to all 10 projects
+- **[Projects Directory](basic/projects/)** - All project source code and documentation
+  - Beginner: URL Shortener, Weather CLI, File Encryptor
+  - Intermediate: Blog Engine, Job Queue, Rate Limiter, Log Aggregator
+  - Advanced: Service Mesh, TimeSeries DB, Container Orchestrator
+
+### 📚 Course Content
+- **[Course Overview](course/README.md)** - Complete course guide
+- **[Syllabus](course/syllabus.md)** - 20 progressive lessons
+- **[Lessons](course/lessons/)** - Detailed lesson content
+- **[Exercises](course/code/)** - Hands-on coding challenges
+
+### 🔧 Platform
+- **[Backend API](backend/docs/API.md)** - API reference
+- **[Frontend Guide](frontend/README.md)** - Dashboard guide
+
 ## 🎉 What's Next?
 
-1. **Start Learning**: Begin with [Complete Tutorial System](TUTORIALS.md)
-2. **Quick Setup**: Follow the [5-Minute Quick Start Guide](docs/tutorials/QUICK_START_GUIDE.md)
-3. **Try the Platform**: Launch the backend and frontend
-4. **Complete Exercises**: Work through the progressive lessons
-5. **Build Projects**: Apply your knowledge to real applications
+1. **Start Learning**: Begin with [Quick Start Guide](QUICK_START.md)
+2. **Choose Your Path**: Pick from [4 Learning Paths](LEARNING_PATHS.md)
+3. **Build Projects**: Follow [Project Tutorials](TUTORIALS.md)
+4. **Try the Platform**: Launch the backend and frontend
+5. **Complete Exercises**: Work through the progressive lessons
 6. **Share Your Progress**: Show off your Go expertise!
 
 ---

@@ -98,7 +98,7 @@ func demonstrateVariableScope() {
 	if true {
 		blockVar := "I'm only in this block"
 		fmt.Printf("Block variable: %s\n", blockVar)
-		
+
 		// Can access outer scopes
 		fmt.Printf("Accessing local from block: %s\n", localVar)
 	}
@@ -276,7 +276,7 @@ func average(scores ...float64) float64 {
 	if len(scores) == 0 {
 		return 0
 	}
-	
+
 	total := 0.0
 	for _, score := range scores {
 		total += score
@@ -288,7 +288,7 @@ func joinStrings(separator string, strings ...string) string {
 	if len(strings) == 0 {
 		return ""
 	}
-	
+
 	result := strings[0]
 	for i := 1; i < len(strings); i++ {
 		result += separator + strings[i]

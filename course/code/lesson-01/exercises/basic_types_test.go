@@ -382,33 +382,33 @@ func TestIsEven(t *testing.T) {
 
 func TestMaxOfThree(t *testing.T) {
 	tests := []struct {
-		name string
+		name    string
 		a, b, c int
 		want    int
 	}{
 		{
 			name: "First is max",
-			a: 10, b: 5, c: 3,
+			a:    10, b: 5, c: 3,
 			want: 10,
 		},
 		{
 			name: "Second is max",
-			a: 3, b: 15, c: 7,
+			a:    3, b: 15, c: 7,
 			want: 15,
 		},
 		{
 			name: "Third is max",
-			a: 4, b: 8, c: 20,
+			a:    4, b: 8, c: 20,
 			want: 20,
 		},
 		{
 			name: "All equal",
-			a: 5, b: 5, c: 5,
+			a:    5, b: 5, c: 5,
 			want: 5,
 		},
 		{
 			name: "Negative numbers",
-			a: -10, b: -5, c: -15,
+			a:    -10, b: -5, c: -15,
 			want: -5,
 		},
 	}

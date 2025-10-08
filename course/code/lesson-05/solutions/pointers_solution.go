@@ -38,10 +38,10 @@ func FindMinMax(numbers []int, min, max *int) {
 	if len(numbers) == 0 {
 		return
 	}
-	
+
 	*min = numbers[0]
 	*max = numbers[0]
-	
+
 	for _, num := range numbers[1:] {
 		if num < *min {
 			*min = num
@@ -73,7 +73,7 @@ func (ba *BankAccount) Withdraw(amount float64) bool {
 }
 
 func (ba BankAccount) GetAccountInfo() string {
-	return fmt.Sprintf("Account: %s, Owner: %s, Balance: $%.2f", 
+	return fmt.Sprintf("Account: %s, Owner: %s, Balance: $%.2f",
 		ba.AccountNumber, ba.Owner, ba.Balance)
 }
 
@@ -137,7 +137,7 @@ func (ll *LinkedList) PrependNode(value int) {
 
 func (ll *LinkedList) AppendNode(value int) {
 	newNode := &ListNode{Value: value, Next: nil}
-	
+
 	if ll.Head == nil {
 		ll.Head = newNode
 	} else {
@@ -154,14 +154,14 @@ func (ll *LinkedList) RemoveValue(value int) bool {
 	if ll.Head == nil {
 		return false
 	}
-	
+
 	// Remove from head
 	if ll.Head.Value == value {
 		ll.Head = ll.Head.Next
 		ll.Size--
 		return true
 	}
-	
+
 	// Remove from middle or end
 	current := ll.Head
 	for current.Next != nil {
@@ -172,7 +172,7 @@ func (ll *LinkedList) RemoveValue(value int) bool {
 		}
 		current = current.Next
 	}
-	
+
 	return false
 }
 
@@ -236,12 +236,12 @@ func ParseNameAge(input string, name *string, age *int) bool {
 	if len(parts) != 2 {
 		return false
 	}
-	
+
 	parsedAge, err := strconv.Atoi(strings.TrimSpace(parts[1]))
 	if err != nil {
 		return false
 	}
-	
+
 	*name = strings.TrimSpace(parts[0])
 	*age = parsedAge
 	return true
@@ -285,7 +285,7 @@ func DeepCopySlice(original []int) []int {
 	if original == nil {
 		return nil
 	}
-	
+
 	copy := make([]int, len(original))
 	for i, v := range original {
 		copy[i] = v

@@ -7,7 +7,7 @@ import (
 
 func TestDeclareVariables(t *testing.T) {
 	name, age, salary, isEmployed := DeclareVariables()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -18,7 +18,7 @@ func TestDeclareVariables(t *testing.T) {
 		{"salary", salary, 75000.50},
 		{"isEmployed", isEmployed, true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -30,7 +30,7 @@ func TestDeclareVariables(t *testing.T) {
 
 func TestMultipleDeclarations(t *testing.T) {
 	x, y, z, a, b := MultipleDeclarations()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -42,7 +42,7 @@ func TestMultipleDeclarations(t *testing.T) {
 		{"a", a, "Hello"},
 		{"b", b, "World"},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -54,7 +54,7 @@ func TestMultipleDeclarations(t *testing.T) {
 
 func TestBlockDeclaration(t *testing.T) {
 	projectName, version, isStable := BlockDeclaration()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -64,7 +64,7 @@ func TestBlockDeclaration(t *testing.T) {
 		{"version", version, 2.1},
 		{"isStable", isStable, true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -100,7 +100,7 @@ func TestTestVariableScope(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := TestVariableScope(tt.input)
@@ -115,8 +115,8 @@ func TestTestVariableScope(t *testing.T) {
 
 func TestSwapVariables(t *testing.T) {
 	tests := []struct {
-		name string
-		a, b int
+		name         string
+		a, b         int
 		wantA, wantB int
 	}{
 		{"positive numbers", 5, 10, 10, 5},
@@ -124,12 +124,12 @@ func TestSwapVariables(t *testing.T) {
 		{"zero values", 0, 42, 42, 0},
 		{"same values", 15, 15, 15, 15},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotA, gotB := SwapVariables(tt.a, tt.b)
 			if gotA != tt.wantA || gotB != tt.wantB {
-				t.Errorf("SwapVariables(%d, %d) = (%d, %d), want (%d, %d)", 
+				t.Errorf("SwapVariables(%d, %d) = (%d, %d), want (%d, %d)",
 					tt.a, tt.b, gotA, gotB, tt.wantA, tt.wantB)
 			}
 		})
@@ -138,7 +138,7 @@ func TestSwapVariables(t *testing.T) {
 
 func TestZeroValues(t *testing.T) {
 	zeroInt, zeroFloat, zeroString, zeroBool := ZeroValues()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -149,7 +149,7 @@ func TestZeroValues(t *testing.T) {
 		{"zeroString", zeroString, ""},
 		{"zeroBool", zeroBool, false},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -161,7 +161,7 @@ func TestZeroValues(t *testing.T) {
 
 func TestConstantUsage(t *testing.T) {
 	pi, maxRetries, appName := ConstantUsage()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -171,7 +171,7 @@ func TestConstantUsage(t *testing.T) {
 		{"maxRetries", maxRetries, 5},
 		{"appName", appName, "Learning Go"},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -187,12 +187,12 @@ func TestVariableReassignment(t *testing.T) {
 		initial  int
 		expected int
 	}{
-		{"positive number", 10, 35},  // (10 + 10) * 2 - 5 = 35
-		{"zero", 0, 15},              // (0 + 10) * 2 - 5 = 15
-		{"negative number", -5, 5},   // (-5 + 10) * 2 - 5 = 5
-		{"large number", 100, 215},   // (100 + 10) * 2 - 5 = 215
+		{"positive number", 10, 35}, // (10 + 10) * 2 - 5 = 35
+		{"zero", 0, 15},             // (0 + 10) * 2 - 5 = 15
+		{"negative number", -5, 5},  // (-5 + 10) * 2 - 5 = 5
+		{"large number", 100, 215},  // (100 + 10) * 2 - 5 = 215
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := VariableReassignment(tt.initial)
@@ -205,7 +205,7 @@ func TestVariableReassignment(t *testing.T) {
 
 func TestTypeInference(t *testing.T) {
 	inferredInt, inferredFloat, inferredString, inferredBool := TypeInference()
-	
+
 	tests := []struct {
 		name     string
 		got      interface{}
@@ -216,7 +216,7 @@ func TestTypeInference(t *testing.T) {
 		{"inferredString", inferredString, "Go"},
 		{"inferredBool", inferredBool, true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expected {
@@ -249,7 +249,7 @@ func TestShadowingExample(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := ShadowingExample(tt.outer)

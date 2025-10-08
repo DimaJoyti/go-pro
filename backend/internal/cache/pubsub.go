@@ -312,7 +312,7 @@ func (r *RedisPubSub) PublishBytes(ctx context.Context, channel string, message 
 // GetChannelSubscribers returns the number of subscribers for a channel
 func (r *RedisPubSub) GetChannelSubscribers(ctx context.Context, channel string) (int64, error) {
 	channelKey := r.channelKey(channel)
-	
+
 	// Use PUBSUB NUMSUB command
 	result, err := r.client.PubSubNumSub(ctx, channelKey).Result()
 	if err != nil {
@@ -329,7 +329,7 @@ func (r *RedisPubSub) GetChannelSubscribers(ctx context.Context, channel string)
 // ListChannels returns all active channels matching a pattern
 func (r *RedisPubSub) ListChannels(ctx context.Context, pattern string) ([]string, error) {
 	prefixedPattern := r.channelKey(pattern)
-	
+
 	channels, err := r.client.PubSubChannels(ctx, prefixedPattern).Result()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list channels: %w", err)
@@ -359,7 +359,7 @@ func (r *RedisPubSub) BulkPublish(ctx context.Context, messages map[string]inter
 
 	for channel, message := range messages {
 		channelKey := r.channelKey(channel)
-		
+
 		// Serialize message
 		data, err := json.Marshal(message)
 		if err != nil {

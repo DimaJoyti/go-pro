@@ -38,32 +38,40 @@ basic/
 ├── cmd/
 │   └── runner/              # Interactive example runner
 ├── examples/                # Organized learning examples
-│   ├── 01_hello/           # Hello World
-│   ├── 02_variables/       # Variables & Constants
-│   ├── 03_functions/       # Functions
-│   ├── 04_pointers/        # Pointers
-│   ├── 05_arrays_slices/   # Arrays & Slices
-│   ├── 06_control_flow/    # Control Flow
-│   ├── 07_maps/            # Maps
-│   ├── 08_structs/         # Structs
-│   ├── 09_interfaces/      # Interfaces
-│   ├── 10_errors/          # Error Handling
-│   ├── 11_concurrency/     # Goroutines & Channels
-│   └── 12_advanced/        # Advanced Topics
+│   ├── 01. Hello Go/       # Hello World
+│   ├── 02. Variables/      # Variables & Constants
+│   ├── 03. Functions/      # Functions
+│   ├── 04. Pointers/       # Pointers
+│   ├── 05. Arrays and Slices/  # Arrays & Slices
+│   ├── 06. Control Flow/   # Control Flow
+│   ├── 07. Maps/           # Maps
+│   ├── 08. Structs/        # Structs
+│   ├── 09. Interfaces/     # Interfaces
+│   ├── 10. Errors/         # Error Handling
+│   ├── 11. Goroutines/     # Goroutines & Channels
+│   ├── 12. File IO/        # File I/O Operations (NEW!)
+│   ├── 13. Testing/        # Testing & Benchmarks (NEW!)
+│   ├── prime_numbers.go    # Concurrent prime finder (NEW!)
+│   ├── word_counter.go     # Word frequency counter (NEW!)
+│   ├── json_parser.go      # JSON handling (NEW!)
+│   ├── rate_limiter.go     # Rate limiting (NEW!)
+│   ├── cache.go            # In-memory cache (NEW!)
+│   ├── queue.go            # FIFO queue (NEW!)
+│   ├── linked_list.go      # Linked list (NEW!)
+│   ├── binary_search.go    # Binary search (NEW!)
+│   ├── producer_consumer.go # Producer-consumer pattern (NEW!)
+│   ├── context_timeout.go  # Context usage (NEW!)
+│   ├── merge_sort.go       # Concurrent merge sort (NEW!)
+│   └── ... (other examples)
 ├── projects/               # Mini projects
 │   ├── calculator/         # Calculator app
 │   ├── todo_list/          # Todo list manager
 │   └── order_system/       # Order management
 ├── exercises/              # Practice exercises
-│   ├── 01_basics/
-│   ├── 02_intermediate/
-│   └── 03_advanced/
+│   ├── 01_basics/          # FizzBuzz, Reverse String (NEW!)
+│   ├── 02_intermediate/    # URL Shortener (NEW!)
+│   └── 03_advanced/        # Web Crawler (NEW!)
 └── tests/                  # Test examples
-
-Legacy directories (being migrated):
-├── 01. Hello Go/           # Original lesson format
-├── 02. Variables/
-└── ... (other numbered lessons)
 ```
 
 ## 📚 Learning Path
@@ -80,11 +88,38 @@ Legacy directories (being migrated):
 7. **Maps** - Key-value data structures
 8. **Structs** - Custom types and methods
 
-### Advanced (Examples 9-12)
+### Advanced (Examples 9-13)
 9. **Interfaces** - Polymorphism and abstraction
 10. **Errors** - Error handling patterns
 11. **Concurrency** - Goroutines, channels, patterns
-12. **Advanced** - Advanced Go features
+12. **File I/O** - File operations and directory management (NEW!)
+13. **Testing** - Unit tests, table-driven tests, benchmarks (NEW!)
+
+## 🆕 New Exercises (24 Total!)
+
+### Standalone Examples (11 files)
+- **prime_numbers.go** - Concurrent prime number finder
+- **word_counter.go** - Word frequency analysis
+- **json_parser.go** - JSON encoding/decoding
+- **rate_limiter.go** - Rate limiting implementation
+- **cache.go** - In-memory cache with expiration
+- **queue.go** - FIFO queue data structure
+- **linked_list.go** - Linked list implementation
+- **binary_search.go** - Binary search algorithms
+- **producer_consumer.go** - Concurrency patterns
+- **context_timeout.go** - Context package usage
+- **merge_sort.go** - Concurrent sorting
+
+### Structured Directories
+- **12. File IO/** - 6 file operation exercises
+- **13. Testing/** - 3 testing examples with benchmarks
+
+### Practice Exercises
+- **01_basics/** - FizzBuzz, Reverse String
+- **02_intermediate/** - URL Shortener
+- **03_advanced/** - Concurrent Web Crawler
+
+📖 **See [NEW_EXERCISES.md](examples/NEW_EXERCISES.md) for detailed documentation**
 
 ## 🎯 Projects
 

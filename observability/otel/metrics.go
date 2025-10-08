@@ -121,11 +121,11 @@ func Meter(name string) metric.Meter {
 
 // HTTPMetrics holds HTTP-related metrics
 type HTTPMetrics struct {
-	requestCounter    metric.Int64Counter
-	requestDuration   metric.Float64Histogram
-	requestSize       metric.Int64Histogram
-	responseSize      metric.Int64Histogram
-	activeRequests    metric.Int64UpDownCounter
+	requestCounter  metric.Int64Counter
+	requestDuration metric.Float64Histogram
+	requestSize     metric.Int64Histogram
+	responseSize    metric.Int64Histogram
+	activeRequests  metric.Int64UpDownCounter
 }
 
 // NewHTTPMetrics creates a new HTTPMetrics instance
@@ -397,4 +397,3 @@ func (m *BusinessMetrics) RecordLessonCompletion(ctx context.Context, courseID, 
 //         businessMetrics.RecordUserRegistration(ctx, "web")
 //     })
 // }
-

@@ -94,7 +94,7 @@ func InitLoggingWithConfig(config *LoggingConfig) (*zap.Logger, error) {
 // Logger returns a logger with trace context
 func Logger(ctx context.Context) *zap.Logger {
 	logger := zap.L()
-	
+
 	// Add trace context if available
 	span := trace.SpanFromContext(ctx)
 	if span.SpanContext().IsValid() {
@@ -104,7 +104,7 @@ func Logger(ctx context.Context) *zap.Logger {
 			zap.Bool("trace_sampled", span.SpanContext().IsSampled()),
 		)
 	}
-	
+
 	return logger
 }
 
@@ -155,10 +155,10 @@ func (m *LoggingMiddleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		ctx := r.Context()
-		
+
 		// Create response writer wrapper
 		rw := &loggingResponseWriter{ResponseWriter: w, statusCode: 200}
-		
+
 		// Log request
 		logger := Logger(ctx).With(
 			zap.String("method", r.Method),
@@ -166,12 +166,12 @@ func (m *LoggingMiddleware) Handler(next http.Handler) http.Handler {
 			zap.String("remote_addr", r.RemoteAddr),
 			zap.String("user_agent", r.UserAgent()),
 		)
-		
+
 		logger.Info("Request started")
-		
+
 		// Call next handler
 		next.ServeHTTP(rw, r.WithContext(ctx))
-		
+
 		// Log response
 		duration := time.Since(start)
 		logger = logger.With(
@@ -179,7 +179,7 @@ func (m *LoggingMiddleware) Handler(next http.Handler) http.Handler {
 			zap.Duration("duration", duration),
 			zap.Int64("response_size", rw.bytesWritten),
 		)
-		
+
 		if rw.statusCode >= 500 {
 			logger.Error("Request completed with error")
 		} else if rw.statusCode >= 400 {
@@ -248,10 +248,10 @@ func (e *StructuredError) WithDetail(key string, value interface{}) *StructuredE
 // LogError logs a structured error with trace context
 func LogError(ctx context.Context, err error, msg string, fields ...zap.Field) {
 	logger := Logger(ctx)
-	
+
 	// Add error to fields
 	fields = append(fields, zap.Error(err))
-	
+
 	// If it's a structured error, add additional fields
 	if structErr, ok := err.(*StructuredError); ok {
 		fields = append(fields,
@@ -259,9 +259,9 @@ func LogError(ctx context.Context, err error, msg string, fields ...zap.Field) {
 			zap.Any("error_details", structErr.Details),
 		)
 	}
-	
+
 	logger.Error(msg, fields...)
-	
+
 	// Also record error in span
 	RecordError(ctx, err)
 }
@@ -317,4 +317,3 @@ func LogError(ctx context.Context, err error, msg string, fields ...zap.Field) {
 //
 //     otel.Info(ctx, "Users fetched successfully")
 // }
-

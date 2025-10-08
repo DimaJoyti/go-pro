@@ -9,14 +9,14 @@ import (
 
 // SecurityConfig holds all security-related configuration
 type SecurityConfig struct {
-	JWT             JWTConfig
-	CORS            CORSConfig
-	RateLimit       RateLimitConfig
-	APIKey          APIKeyConfig
-	HTTPS           HTTPSConfig
-	Headers         HeadersConfig
-	Validation      ValidationConfig
-	Logging         LoggingConfig
+	JWT        JWTConfig
+	CORS       CORSConfig
+	RateLimit  RateLimitConfig
+	APIKey     APIKeyConfig
+	HTTPS      HTTPSConfig
+	Headers    HeadersConfig
+	Validation ValidationConfig
+	Logging    LoggingConfig
 }
 
 type JWTConfig struct {
@@ -43,9 +43,9 @@ type RateLimitConfig struct {
 }
 
 type APIKeyConfig struct {
-	AdminKey          string
-	KeyHeader         string
-	AdminEndpoints    []string
+	AdminKey       string
+	KeyHeader      string
+	AdminEndpoints []string
 }
 
 type HTTPSConfig struct {
@@ -66,10 +66,10 @@ type HeadersConfig struct {
 }
 
 type ValidationConfig struct {
-	MaxJSONSize       int64
-	MaxFieldLength    int
-	AllowedFileTypes  []string
-	SanitizeInput     bool
+	MaxJSONSize      int64
+	MaxFieldLength   int
+	AllowedFileTypes []string
+	SanitizeInput    bool
 }
 
 type LoggingConfig struct {

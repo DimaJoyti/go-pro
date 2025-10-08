@@ -10,9 +10,9 @@ var _ = fmt.Sprint
 
 // PersonInfo represents information about a person
 type PersonInfo struct {
-	Name   string
-	Age    int
-	Height float64
+	Name      string
+	Age       int
+	Height    float64
 	IsStudent bool
 }
 
@@ -23,6 +23,7 @@ type PersonInfo struct {
 //   - age: person's age (int)
 //   - height: person's height in meters (float64)
 //   - isStudent: whether the person is a student (bool)
+//
 // Returns: PersonInfo struct with the provided values
 func CreatePersonInfo(name string, age int, height float64, isStudent bool) PersonInfo {
 	// TODO: Create and return a PersonInfo struct with the given parameters
@@ -46,6 +47,7 @@ func FormatPersonInfo(info PersonInfo) string {
 // Parameters:
 //   - weight: weight in kilograms (float64)
 //   - height: height in meters (float64)
+//
 // Returns: BMI value (float64)
 // Formula: BMI = weight / (height * height)
 func CalculateBMI(weight, height float64) float64 {
@@ -74,6 +76,7 @@ func ClassifyBMI(bmi float64) string {
 // Parameters:
 //   - temp: temperature value (float64)
 //   - fromUnit: source unit, either "C" or "F" (string)
+//
 // Returns: converted temperature (float64)
 // Formulas:
 //   - Celsius to Fahrenheit: F = C * 9/5 + 32

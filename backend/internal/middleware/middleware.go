@@ -298,7 +298,7 @@ func WriteErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	response := &domain.APIResponse{
-		Success:   false,
+		Success: false,
 		Error: &domain.APIError{
 			Type:    apiErr.Type,
 			Message: apiErr.Message,

@@ -200,7 +200,7 @@ func studentManagementExample() {
 
 	// Add new grade to a student
 	students["S001"].Grades = append(students["S001"].Grades, 98)
-	fmt.Printf("Updated grades for %s: %v\n", 
+	fmt.Printf("Updated grades for %s: %v\n",
 		students["S001"].Name, students["S001"].Grades)
 
 	// Find top performer
@@ -213,7 +213,7 @@ func studentManagementExample() {
 			total += grade
 		}
 		average := float64(total) / float64(len(student.Grades))
-		
+
 		if average > topAverage {
 			topAverage = average
 			topStudent = student.Name

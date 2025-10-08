@@ -106,7 +106,7 @@ func (r *ExerciseRepository) GetByID(ctx context.Context, id string) (*domain.Ex
 
 	// Convert difficulty string to enum
 	exercise.Difficulty = domain.Difficulty(difficultyStr)
-	
+
 	// Set a default test cases count (we'll improve this later)
 	exercise.TestCases = 5
 
@@ -166,7 +166,7 @@ func (r *ExerciseRepository) GetByLessonID(ctx context.Context, lessonID string,
 
 		// Convert difficulty string to enum
 		exercise.Difficulty = domain.Difficulty(difficultyStr)
-		
+
 		// Set a default test cases count
 		exercise.TestCases = 5
 
@@ -290,7 +290,7 @@ func (r *ExerciseRepository) GetAll(ctx context.Context, pagination *domain.Pagi
 
 		// Convert difficulty string to enum
 		exercise.Difficulty = domain.Difficulty(difficultyStr)
-		
+
 		// Set a default test cases count
 		exercise.TestCases = 5
 
@@ -307,7 +307,7 @@ func (r *ExerciseRepository) GetAll(ctx context.Context, pagination *domain.Pagi
 // getNextExerciseOrder gets the next exercise order number for a lesson
 func (r *ExerciseRepository) getNextExerciseOrder(ctx context.Context, lessonID string) (int, error) {
 	query := "SELECT COALESCE(MAX(exercise_order), 0) + 1 FROM gopro.exercises WHERE lesson_id = $1"
-	
+
 	var nextOrder int
 	err := r.db.QueryRowContext(ctx, query, lessonID).Scan(&nextOrder)
 	if err != nil {

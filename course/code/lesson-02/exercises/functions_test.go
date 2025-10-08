@@ -16,7 +16,7 @@ func TestSimpleGreeting(t *testing.T) {
 		{"another name", "Bob", "Hello, Bob! Welcome to Go programming."},
 		{"empty name", "", "Hello, ! Welcome to Go programming."},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := SimpleGreeting(tt.input)
@@ -29,9 +29,9 @@ func TestSimpleGreeting(t *testing.T) {
 
 func TestCalculator(t *testing.T) {
 	tests := []struct {
-		name      string
-		a, b      int
-		operation string
+		name       string
+		a, b       int
+		operation  string
 		wantResult int
 		wantError  bool
 	}{
@@ -42,11 +42,11 @@ func TestCalculator(t *testing.T) {
 		{"division by zero", 10, 0, "divide", 0, true},
 		{"unsupported operation", 5, 3, "modulo", 0, true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotResult, gotError := Calculator(tt.a, tt.b, tt.operation)
-			
+
 			if tt.wantError {
 				if gotError == nil {
 					t.Errorf("Calculator() expected error, got nil")
@@ -65,19 +65,19 @@ func TestCalculator(t *testing.T) {
 
 func TestMultipleReturns(t *testing.T) {
 	tests := []struct {
-		name string
-		x, y float64
+		name                                  string
+		x, y                                  float64
 		wantSum, wantDiff, wantProd, wantQuot float64
 	}{
 		{"positive numbers", 10.0, 5.0, 15.0, 5.0, 50.0, 2.0},
 		{"negative numbers", -6.0, 3.0, -3.0, -9.0, -18.0, -2.0},
 		{"with zero", 8.0, 0.0, 8.0, 8.0, 0.0, 0.0}, // Note: division by zero handling varies
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotSum, gotDiff, gotProd, gotQuot := MultipleReturns(tt.x, tt.y)
-			
+
 			if gotSum != tt.wantSum {
 				t.Errorf("MultipleReturns() sum = %v, want %v", gotSum, tt.wantSum)
 			}
@@ -96,15 +96,15 @@ func TestMultipleReturns(t *testing.T) {
 
 func TestNamedReturns(t *testing.T) {
 	tests := []struct {
-		name           string
-		length, width  float64
+		name                    string
+		length, width           float64
 		wantArea, wantPerimeter float64
 	}{
 		{"rectangle", 5.0, 3.0, 15.0, 16.0},
 		{"square", 4.0, 4.0, 16.0, 16.0},
 		{"unit rectangle", 1.0, 1.0, 1.0, 4.0},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotArea, gotPerimeter := NamedReturns(tt.length, tt.width)
@@ -130,7 +130,7 @@ func TestVariadicSum(t *testing.T) {
 		{"mixed numbers", []int{10, -5, 3}, 8},
 		{"empty", []int{}, 0},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := VariadicSum(tt.numbers...)
@@ -143,17 +143,17 @@ func TestVariadicSum(t *testing.T) {
 
 func TestVariadicAverage(t *testing.T) {
 	tests := []struct {
-		name        string
-		values      []float64
-		wantAvg     float64
-		wantCount   int
+		name      string
+		values    []float64
+		wantAvg   float64
+		wantCount int
 	}{
 		{"single value", []float64{5.0}, 5.0, 1},
 		{"multiple values", []float64{2.0, 4.0, 6.0}, 4.0, 3},
 		{"empty", []float64{}, 0.0, 0},
 		{"negative values", []float64{-2.0, -4.0}, -3.0, 2},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotAvg, gotCount := VariadicAverage(tt.values...)
@@ -180,7 +180,7 @@ func TestStringJoiner(t *testing.T) {
 		{"single string", "-", []string{"alone"}, "alone"},
 		{"empty strings", ",", []string{}, ""},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := StringJoiner(tt.separator, tt.strings...)
@@ -202,7 +202,7 @@ func TestFunctionAsParameter(t *testing.T) {
 		{"multiplication", 4, 6, Multiply, 24},
 		{"custom operation", 10, 2, func(x, y int) int { return x - y }, 8},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := FunctionAsParameter(tt.a, tt.b, tt.operation)
@@ -224,7 +224,7 @@ func TestReturnFunction(t *testing.T) {
 		{"add negative", -3, 10, 7},
 		{"add zero", 0, 42, 42},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			adder := ReturnFunction(tt.addValue)
@@ -246,12 +246,12 @@ func TestClosure(t *testing.T) {
 		t.Errorf("Closure() returned nil")
 		return
 	}
-	
+
 	// Test that counter increments
 	first := counter()
 	second := counter()
 	third := counter()
-	
+
 	if first != 1 || second != 2 || third != 3 {
 		t.Errorf("Closure() counter sequence = %d, %d, %d, want 1, 2, 3", first, second, third)
 	}
@@ -259,9 +259,9 @@ func TestClosure(t *testing.T) {
 
 func TestErrorHandling(t *testing.T) {
 	tests := []struct {
-		name      string
-		dividend  float64
-		divisor   float64
+		name       string
+		dividend   float64
+		divisor    float64
 		wantResult float64
 		wantError  bool
 		errorMsg   string
@@ -270,11 +270,11 @@ func TestErrorHandling(t *testing.T) {
 		{"division by zero", 10.0, 0.0, 0.0, true, "division by zero"},
 		{"negative numbers", -6.0, 2.0, -3.0, false, ""},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotResult, gotError := ErrorHandling(tt.dividend, tt.divisor)
-			
+
 			if tt.wantError {
 				if gotError == nil {
 					t.Errorf("ErrorHandling() expected error, got nil")
@@ -304,7 +304,7 @@ func TestRecursiveFactorial(t *testing.T) {
 		{"factorial 5", 5, 120},
 		{"factorial 6", 6, 720},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := RecursiveFactorial(tt.n)
@@ -327,7 +327,7 @@ func TestRecursiveFibonacci(t *testing.T) {
 		{"fibonacci 5", 5, 5},
 		{"fibonacci 8", 8, 21},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := RecursiveFibonacci(tt.n)

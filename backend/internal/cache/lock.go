@@ -19,11 +19,11 @@ type RedisDistributedLock struct {
 
 // LockInfo represents information about a lock
 type LockInfo struct {
-	Key       string    `json:"key"`
-	Value     string    `json:"value"`
-	Owner     string    `json:"owner"`
-	CreatedAt time.Time `json:"created_at"`
-	ExpiresAt time.Time `json:"expires_at"`
+	Key       string        `json:"key"`
+	Value     string        `json:"value"`
+	Owner     string        `json:"owner"`
+	CreatedAt time.Time     `json:"created_at"`
+	ExpiresAt time.Time     `json:"expires_at"`
 	TTL       time.Duration `json:"ttl"`
 }
 

@@ -27,9 +27,9 @@ const (
 
 // File permissions using bit operations with iota
 const (
-	PermissionRead = 1 << iota // 1 (binary: 001)
-	PermissionWrite            // 2 (binary: 010)
-	PermissionExecute          // 4 (binary: 100)
+	PermissionRead    = 1 << iota // 1 (binary: 001)
+	PermissionWrite               // 2 (binary: 010)
+	PermissionExecute             // 4 (binary: 100)
 )
 
 // Days of the week starting from 1
@@ -129,24 +129,24 @@ func CalculateCircleProperties(radius float64) (float64, float64) {
 // FormatPermissions returns a string representation of permissions
 func FormatPermissions(permissions int) string {
 	result := ""
-	
+
 	if HasPermission(permissions, PermissionRead) {
 		result += "r"
 	} else {
 		result += "-"
 	}
-	
+
 	if HasPermission(permissions, PermissionWrite) {
 		result += "w"
 	} else {
 		result += "-"
 	}
-	
+
 	if HasPermission(permissions, PermissionExecute) {
 		result += "x"
 	} else {
 		result += "-"
 	}
-	
+
 	return result
 }

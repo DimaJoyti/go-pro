@@ -21,11 +21,11 @@ type Cache interface {
 	Get(ctx context.Context, key string, dest interface{}) error
 	Delete(ctx context.Context, key string) error
 	Exists(ctx context.Context, key string) (bool, error)
-	
+
 	// Expiration operations
 	Expire(ctx context.Context, key string, expiration time.Duration) error
 	TTL(ctx context.Context, key string) (time.Duration, error)
-	
+
 	// Atomic operations
 	Increment(ctx context.Context, key string) (int64, error)
 	IncrementBy(ctx context.Context, key string, value int64) (int64, error)
@@ -33,15 +33,15 @@ type Cache interface {
 	DecrementBy(ctx context.Context, key string, value int64) (int64, error)
 	SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) (bool, error)
 	GetSet(ctx context.Context, key string, value interface{}) (string, error)
-	
+
 	// Batch operations
 	MGet(ctx context.Context, keys ...string) ([]interface{}, error)
 	MSet(ctx context.Context, pairs ...interface{}) error
-	
+
 	// Key operations
 	Keys(ctx context.Context, pattern string) ([]string, error)
 	Scan(ctx context.Context, cursor uint64, match string, count int64) ([]string, uint64, error)
-	
+
 	// Utility operations
 	FlushDB(ctx context.Context) error
 	HealthCheck(ctx context.Context) error
@@ -56,7 +56,7 @@ type SessionStore interface {
 	UpdateSession(ctx context.Context, sessionID string, data map[string]interface{}) error
 	DeleteSession(ctx context.Context, sessionID string) error
 	RefreshSession(ctx context.Context, sessionID string, expiration time.Duration) error
-	
+
 	// Session management
 	ListUserSessions(ctx context.Context, userID string) ([]string, error)
 	DeleteUserSessions(ctx context.Context, userID string) error
@@ -69,7 +69,7 @@ type DistributedLock interface {
 	Lock(ctx context.Context, key string, expiration time.Duration) (bool, error)
 	Unlock(ctx context.Context, key string) error
 	Extend(ctx context.Context, key string, expiration time.Duration) error
-	
+
 	// Lock information
 	IsLocked(ctx context.Context, key string) (bool, error)
 	GetLockTTL(ctx context.Context, key string) (time.Duration, error)
@@ -80,7 +80,7 @@ type RateLimiter interface {
 	// Rate limiting operations
 	Allow(ctx context.Context, key string, limit int64, window time.Duration) (bool, error)
 	AllowN(ctx context.Context, key string, n int64, limit int64, window time.Duration) (bool, error)
-	
+
 	// Rate limit information
 	Remaining(ctx context.Context, key string, limit int64, window time.Duration) (int64, error)
 	Reset(ctx context.Context, key string) error
@@ -90,15 +90,15 @@ type RateLimiter interface {
 type PubSub interface {
 	// Publishing
 	Publish(ctx context.Context, channel string, message interface{}) error
-	
+
 	// Subscribing
 	Subscribe(ctx context.Context, channels ...string) (<-chan Message, error)
 	Unsubscribe(ctx context.Context, channels ...string) error
-	
+
 	// Pattern subscribing
 	PSubscribe(ctx context.Context, patterns ...string) (<-chan Message, error)
 	PUnsubscribe(ctx context.Context, patterns ...string) error
-	
+
 	// Close subscription
 	Close() error
 }
@@ -135,7 +135,7 @@ type CacheMetrics interface {
 	// Metrics operations
 	GetStats() *CacheStats
 	ResetStats()
-	
+
 	// Metric recording
 	RecordHit()
 	RecordMiss()
@@ -156,7 +156,7 @@ type CacheOptions struct {
 // TaggedCache defines the interface for tagged caching
 type TaggedCache interface {
 	Cache
-	
+
 	// Tagged operations
 	SetWithTags(ctx context.Context, key string, value interface{}, tags []string, expiration time.Duration) error
 	InvalidateTag(ctx context.Context, tag string) error
@@ -167,7 +167,7 @@ type TaggedCache interface {
 // NamespacedCache defines the interface for namespaced caching
 type NamespacedCache interface {
 	Cache
-	
+
 	// Namespace operations
 	SetNamespace(namespace string)
 	GetNamespace() string
@@ -177,7 +177,7 @@ type NamespacedCache interface {
 // CompressedCache defines the interface for compressed caching
 type CompressedCache interface {
 	Cache
-	
+
 	// Compression operations
 	SetCompressed(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	GetCompressed(ctx context.Context, key string, dest interface{}) error
@@ -186,7 +186,7 @@ type CompressedCache interface {
 // SerializedCache defines the interface for serialized caching
 type SerializedCache interface {
 	Cache
-	
+
 	// Serialization operations
 	SetSerialized(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	GetSerialized(ctx context.Context, key string, dest interface{}) error
@@ -200,7 +200,7 @@ type CacheFactory interface {
 	CreateDistributedLock(config interface{}) (DistributedLock, error)
 	CreateRateLimiter(config interface{}) (RateLimiter, error)
 	CreatePubSub(config interface{}) (PubSub, error)
-	
+
 	// Health check
 	HealthCheck(ctx context.Context) error
 }

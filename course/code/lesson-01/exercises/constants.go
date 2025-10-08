@@ -6,10 +6,10 @@ package exercises
 // TODO: Declare constants for mathematical values
 // Create constants for:
 // - Pi (3.14159)
-// - E (2.71828) 
+// - E (2.71828)
 // - GoldenRatio (1.61803)
 const (
-	// TODO: Add your mathematical constants here
+// TODO: Add your mathematical constants here
 )
 
 // TODO: Create an enumeration for HTTP status codes using iota
@@ -20,28 +20,28 @@ const (
 // - StatusNoContent = 204
 // Hint: Start with StatusOK = 200 + iota, then adjust others
 const (
-	// TODO: Add your HTTP status constants here using iota
+// TODO: Add your HTTP status constants here using iota
 )
 
 // TODO: Create an enumeration for log levels using iota
 // Create constants for:
 // - LogDebug = 0
-// - LogInfo = 1  
+// - LogInfo = 1
 // - LogWarning = 2
 // - LogError = 3
 // - LogFatal = 4
 const (
-	// TODO: Add your log level constants here using iota
+// TODO: Add your log level constants here using iota
 )
 
 // TODO: Create bit flag constants for file permissions using iota
 // Create constants for:
 // - PermissionRead = 1 (binary: 001)
-// - PermissionWrite = 2 (binary: 010)  
+// - PermissionWrite = 2 (binary: 010)
 // - PermissionExecute = 4 (binary: 100)
 // Hint: Use 1 << iota for bit shifting
 const (
-	// TODO: Add your permission constants here using bit operations with iota
+// TODO: Add your permission constants here using bit operations with iota
 )
 
 // TODO: Create an enumeration for days of the week starting from 1
@@ -51,7 +51,7 @@ const (
 // - ... and so on until Sunday = 7
 // Hint: Use iota + 1
 const (
-	// TODO: Add your weekday constants here
+// TODO: Add your weekday constants here
 )
 
 // TODO: Complete this function
@@ -60,7 +60,7 @@ const (
 // Returns: status message (string)
 // Handle these cases:
 // - 200: "OK"
-// - 201: "Created"  
+// - 201: "Created"
 // - 202: "Accepted"
 // - 204: "No Content"
 // - default: "Unknown Status"
@@ -77,7 +77,7 @@ func GetHTTPStatusMessage(statusCode int) string {
 // Handle these cases:
 // - LogDebug: "DEBUG"
 // - LogInfo: "INFO"
-// - LogWarning: "WARNING"  
+// - LogWarning: "WARNING"
 // - LogError: "ERROR"
 // - LogFatal: "FATAL"
 // - default: "UNKNOWN"
@@ -92,6 +92,7 @@ func GetLogLevelName(level int) string {
 // Parameters:
 //   - permissions - combined permissions (int)
 //   - permission - permission to check (int)
+//
 // Returns: true if permission is included, false otherwise
 // Hint: Use bitwise AND (&) operator
 func HasPermission(permissions, permission int) bool {
@@ -105,6 +106,7 @@ func HasPermission(permissions, permission int) bool {
 // Parameters:
 //   - permissions - current permissions (int)
 //   - permission - permission to add (int)
+//
 // Returns: updated permissions (int)
 // Hint: Use bitwise OR (|) operator
 func AddPermission(permissions, permission int) int {
@@ -118,6 +120,7 @@ func AddPermission(permissions, permission int) int {
 // Parameters:
 //   - permissions - current permissions (int)
 //   - permission - permission to remove (int)
+//
 // Returns: updated permissions (int)
 // Hint: Use bitwise AND with NOT (&^) operator
 func RemovePermission(permissions, permission int) int {

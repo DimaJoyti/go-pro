@@ -37,10 +37,10 @@ func main() {
 func demonstrateBasicStructs() {
 	// Define and initialize structs
 	type Person struct {
-		Name    string
-		Age     int
-		Email   string
-		Active  bool
+		Name   string
+		Age    int
+		Email  string
+		Active bool
 	}
 
 	// Zero value
@@ -109,8 +109,8 @@ func demonstrateEmbedding() {
 	}
 
 	type Employee struct {
-		Person          // Embedded struct
-		Address         // Embedded struct
+		Person     // Embedded struct
+		Address    // Embedded struct
 		EmployeeID string
 		Department string
 		Salary     float64
@@ -239,19 +239,19 @@ func demonstrateEmployeeSystem() {
 	fmt.Printf("Company: %s\n", company.Name)
 	fmt.Println("Departments:")
 	for _, dept := range company.Departments {
-		fmt.Printf("  %s (Manager: %s, Budget: $%.0f)\n", 
+		fmt.Printf("  %s (Manager: %s, Budget: $%.0f)\n",
 			dept.Name, dept.Manager, dept.Budget)
 		fmt.Printf("    Employees: %d\n", len(dept.Employees))
-		
+
 		totalSalary := 0.0
 		for _, empID := range dept.Employees {
 			emp := company.Employees[empID]
-			fmt.Printf("      - %s (ID: %s, Salary: $%.0f)\n", 
+			fmt.Printf("      - %s (ID: %s, Salary: $%.0f)\n",
 				emp.Name, emp.ID, emp.Salary)
 			totalSalary += emp.Salary
 		}
 		fmt.Printf("    Total Salaries: $%.0f\n", totalSalary)
-		fmt.Printf("    Budget Utilization: %.1f%%\n", 
+		fmt.Printf("    Budget Utilization: %.1f%%\n",
 			(totalSalary/dept.Budget)*100)
 	}
 }

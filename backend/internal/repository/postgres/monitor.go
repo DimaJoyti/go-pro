@@ -282,13 +282,13 @@ func (tdb *TrackedDB) QueryRowContext(ctx context.Context, query string, args ..
 
 // HealthReport generates a comprehensive health report
 type HealthReport struct {
-	PoolStats       PoolStats              `json:"pool_stats"`
-	TopSlowQueries  []*QueryStats          `json:"top_slow_queries"`
-	TotalQueries    int64                  `json:"total_queries"`
-	TotalErrors     int64                  `json:"total_errors"`
-	DatabaseVersion string                 `json:"database_version"`
-	Uptime          time.Duration          `json:"uptime"`
-	Timestamp       time.Time              `json:"timestamp"`
+	PoolStats       PoolStats     `json:"pool_stats"`
+	TopSlowQueries  []*QueryStats `json:"top_slow_queries"`
+	TotalQueries    int64         `json:"total_queries"`
+	TotalErrors     int64         `json:"total_errors"`
+	DatabaseVersion string        `json:"database_version"`
+	Uptime          time.Duration `json:"uptime"`
+	Timestamp       time.Time     `json:"timestamp"`
 }
 
 // GenerateHealthReport generates a comprehensive health report

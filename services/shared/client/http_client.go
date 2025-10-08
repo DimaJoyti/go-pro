@@ -262,4 +262,3 @@ func (rc *RetryableHTTPClient) doWithRetry(ctx context.Context, fn func() (*Resp
 
 	return nil, fmt.Errorf("max retries exceeded: %w", lastErr)
 }
-
