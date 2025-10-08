@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+// LargeStruct is used for performance comparison
+type LargeStruct struct {
+	Data [1000]int
+	Name string
+}
+
 func main() {
 	fmt.Println("=== Lesson 5: Pointers and Memory Management ===\n")
 
@@ -175,11 +181,6 @@ func demonstrateMemoryAllocation() {
 
 func demonstratePerformance() {
 	// Create a large struct
-	type LargeStruct struct {
-		Data [1000]int
-		Name string
-	}
-
 	large := LargeStruct{Name: "Test"}
 	for i := 0; i < 1000; i++ {
 		large.Data[i] = i

@@ -20,7 +20,20 @@ This isn't just a course - it's a complete learning ecosystem that includes:
 - **Node.js 18+** for the frontend
 - **Git** for version control
 
-### 1. Start Learning Immediately
+### Option 1: One-Command Start (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/DimaJoyti/go-pro.git
+cd go-pro
+
+# Start everything with one command
+./start.sh
+
+# Or just setup without starting
+./start.sh --setup
+```
+
+### Option 2: Start Learning Immediately
 ```bash
 # Navigate to course content
 cd course
@@ -40,12 +53,12 @@ go run main.go
 go test ./exercises/...
 ```
 
-### 2. Launch the Learning Platform
+### Option 3: Manual Launch
 ```bash
 # Start the backend API
 cd backend
 go mod tidy
-go run main.go
+go run ./cmd/server
 # API will be available at http://localhost:8080
 
 # In another terminal, start the frontend
@@ -78,8 +91,9 @@ go-pro/
 │       ├── rest-api-server/
 │       └── microservices-system/
 ├── 🔧 backend/                  # Go-based learning platform API
-│   ├── main.go                  # REST API server
-│   ├── static/                  # API documentation
+│   ├── cmd/server/main.go       # REST API server
+│   ├── internal/                # Internal packages
+│   ├── pkg/                     # Public packages
 │   └── go.mod                   # Dependencies
 ├── 🌐 frontend/                 # Next.js learning dashboard
 │   ├── app/                     # Next.js 15 app directory
@@ -210,7 +224,7 @@ By completing this course, you will:
 ### **Backend API**
 ```bash
 cd backend
-go build -o go-pro-api main.go
+go build -o go-pro-api ./cmd/server
 ./go-pro-api
 ```
 
@@ -237,16 +251,59 @@ Your learning progress is automatically tracked:
 
 ## 🎉 What's Next?
 
-1. **Start Learning**: Begin with [Course Overview](course/README.md)
-2. **Try the Platform**: Launch the backend and frontend
-3. **Complete Exercises**: Work through the progressive lessons
-4. **Build Projects**: Apply your knowledge to real applications
-5. **Share Your Progress**: Show off your Go expertise!
+1. **Start Learning**: Begin with [Complete Tutorial System](TUTORIALS.md)
+2. **Quick Setup**: Follow the [5-Minute Quick Start Guide](docs/tutorials/QUICK_START_GUIDE.md)
+3. **Try the Platform**: Launch the backend and frontend
+4. **Complete Exercises**: Work through the progressive lessons
+5. **Build Projects**: Apply your knowledge to real applications
+6. **Share Your Progress**: Show off your Go expertise!
+
+---
+
+## 📚 Tutorial Resources
+
+### 🚀 Getting Started
+- **[Complete Tutorial System](TUTORIALS.md)** - Master index of all 20 tutorials, projects, and learning paths
+- **[Quick Start Guide](docs/tutorials/QUICK_START_GUIDE.md)** - Get up and running in 5 minutes
+- **[Tutorial Hub](docs/tutorials/README.md)** - Central documentation for all tutorials
+
+### 🎓 Learning Paths
+- **Complete Beginner** (14 weeks) - Start from scratch
+- **Experienced Developer** (6 weeks) - Fast-track for programmers
+- **Intensive Bootcamp** (3 weeks) - Full-time immersion
+- **Concurrency Specialist** (2 weeks) - Master Go's concurrency
+- **Backend Developer** (4 weeks) - Focus on web services
+
+### 🔄 Special Topics
+- **[Concurrency Deep Dive](docs/tutorials/concurrency-deep-dive.md)** - Advanced goroutines and channels
+- **[AWS Integration](aws/README.md)** - Deploy to Amazon Web Services
+- **[GCP Integration](gcp/README.md)** - Deploy to Google Cloud Platform
+- **[Multi-Cloud Deployment](multi-cloud/README.md)** - Cloud-agnostic applications
+- **[OpenTelemetry Observability](observability/README.md)** - Production monitoring
+
+### 🏗️ Infrastructure & DevOps Tutorials
+- **[Infrastructure Tutorials Master Index](docs/tutorials/INFRASTRUCTURE_TUTORIALS.md)** - Complete guide to databases, cloud, and CI/CD
+- **[PostgreSQL with Go](docs/tutorials/postgresql-tutorial.md)** - Database integration and best practices
+- **[Redis with Go](docs/tutorials/redis-tutorial.md)** - Caching, sessions, and real-time features
+- **[Apache Kafka with Go](docs/tutorials/kafka-tutorial.md)** - Event streaming and messaging
+- **[AWS for Go Applications](docs/tutorials/aws-tutorial.md)** - S3, DynamoDB, Lambda, and more
+- **[GCP for Go Applications](docs/tutorials/gcp-tutorial.md)** - Cloud Storage, Firestore, Pub/Sub
+- **[Terraform for Go Apps](docs/tutorials/terraform-tutorial.md)** - Infrastructure as Code
+- **[GitHub Actions for Go](docs/tutorials/github-actions-tutorial.md)** - CI/CD automation
+
+### 🎥 Content Creation
+- **[Video Tutorial Scripts](docs/tutorials/VIDEO_TUTORIAL_SCRIPTS.md)** - Create video content
+- **[Tutorial Creation Guide](docs/tutorials/TUTORIAL_CREATION_GUIDE.md)** - Contribute tutorials
+
+### 📊 Progress Tracking
+Use the checklists in [TUTORIALS.md](TUTORIALS.md) to track your learning journey through all 20 tutorials and 4 major projects.
 
 ---
 
 **Ready to become a Go expert?** 🚀
 
-Start your journey: [Course Overview](course/README.md) | [API Documentation](http://localhost:8080) | [Learning Dashboard](http://localhost:3000)
+Start your journey: [Complete Tutorial System](TUTORIALS.md) | [Quick Start Guide](docs/tutorials/QUICK_START_GUIDE.md) | [Course Overview](course/README.md)
+
+**API Documentation**: http://localhost:8080 | **Learning Dashboard**: http://localhost:3000
 
 Happy coding! 🎉

@@ -3,13 +3,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/DimaJoyti/go-pro/services/api-gateway/internal/config"
 	"github.com/DimaJoyti/go-pro/services/api-gateway/internal/handler"

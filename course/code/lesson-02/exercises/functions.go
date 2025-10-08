@@ -2,6 +2,9 @@ package exercises
 
 import "fmt"
 
+// Suppress unused import warning - fmt is used in exercise solutions
+var _ = fmt.Sprint
+
 // Exercise 2: Functions Practice
 // Complete the following functions to practice with Go function patterns
 

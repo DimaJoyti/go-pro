@@ -207,7 +207,7 @@ func studentManagementExample() {
 	var topStudent string
 	var topAverage float64
 
-	for id, student := range students {
+	for _, student := range students {
 		total := 0
 		for _, grade := range student.Grades {
 			total += grade

@@ -10,6 +10,7 @@ import (
 
 	apierrors "go-pro-backend/internal/errors"
 	"go-pro-backend/pkg/logger"
+	"go-pro-backend/security"
 )
 
 // ContextKey represents a context key type
@@ -24,12 +25,12 @@ const (
 
 // AuthMiddleware provides JWT authentication middleware
 type AuthMiddleware struct {
-	jwtManager *JWTManager
+	jwtManager *security.JWTManager
 	logger     logger.Logger
 }
 
 // NewAuthMiddleware creates a new authentication middleware
-func NewAuthMiddleware(jwtManager *JWTManager, logger logger.Logger) *AuthMiddleware {
+func NewAuthMiddleware(jwtManager *security.JWTManager, logger logger.Logger) *AuthMiddleware {
 	return &AuthMiddleware{
 		jwtManager: jwtManager,
 		logger:     logger,
@@ -64,7 +65,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		}
 
 		// Validate token
-		claims, err := a.jwtManager.ValidateToken(ctx, token)
+		claims, err := a.jwtManager.ValidateToken(token)
 		if err != nil {
 			a.logger.Warn(ctx, "Invalid JWT token", "error", err)
 			a.writeErrorResponse(w, r, apierrors.NewUnauthorizedError("invalid token"))
@@ -74,15 +75,14 @@ func (a *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		// Add claims to context
 		ctx = context.WithValue(ctx, ClaimsContextKey, claims)
 		ctx = context.WithValue(ctx, UserContextKey, &UserInfo{
-			ID:       claims.UserID,
-			Email:    claims.Email,
-			Username: claims.Username,
-			Roles:    claims.Roles,
+			ID:    claims.UserID,
+			Email: claims.Email,
+			Roles: claims.Roles,
 		})
 
 		a.logger.Debug(ctx, "User authenticated successfully",
 			"user_id", claims.UserID,
-			"username", claims.Username)
+			"email", claims.Email)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -158,7 +158,7 @@ func (a *AuthMiddleware) OptionalAuth(next http.Handler) http.Handler {
 		}
 
 		// Try to validate token
-		claims, err := a.jwtManager.ValidateToken(ctx, token)
+		claims, err := a.jwtManager.ValidateToken(token)
 		if err != nil {
 			// Invalid token, continue without authentication
 			a.logger.Debug(ctx, "Optional auth failed, continuing without authentication", "error", err)
@@ -169,10 +169,9 @@ func (a *AuthMiddleware) OptionalAuth(next http.Handler) http.Handler {
 		// Add claims to context
 		ctx = context.WithValue(ctx, ClaimsContextKey, claims)
 		ctx = context.WithValue(ctx, UserContextKey, &UserInfo{
-			ID:       claims.UserID,
-			Email:    claims.Email,
-			Username: claims.Username,
-			Roles:    claims.Roles,
+			ID:    claims.UserID,
+			Email: claims.Email,
+			Roles: claims.Roles,
 		})
 
 		a.logger.Debug(ctx, "Optional authentication successful", "user_id", claims.UserID)
@@ -183,10 +182,9 @@ func (a *AuthMiddleware) OptionalAuth(next http.Handler) http.Handler {
 
 // UserInfo represents user information stored in context
 type UserInfo struct {
-	ID       string   `json:"id"`
-	Email    string   `json:"email"`
-	Username string   `json:"username"`
-	Roles    []string `json:"roles"`
+	ID    string   `json:"id"`
+	Email string   `json:"email"`
+	Roles []string `json:"roles"`
 }
 
 // GetUserFromContext extracts user information from context
@@ -196,8 +194,8 @@ func GetUserFromContext(ctx context.Context) (*UserInfo, bool) {
 }
 
 // GetClaimsFromContext extracts JWT claims from context
-func GetClaimsFromContext(ctx context.Context) (*Claims, bool) {
-	claims, ok := ctx.Value(ClaimsContextKey).(*Claims)
+func GetClaimsFromContext(ctx context.Context) (*security.Claims, bool) {
+	claims, ok := ctx.Value(ClaimsContextKey).(*security.Claims)
 	return claims, ok
 }
 

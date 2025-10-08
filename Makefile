@@ -77,17 +77,17 @@ deps: ## Download and verify dependencies
 
 build: deps ## Build the application
 	@echo "$(YELLOW)Building $(APP_NAME)...$(NC)"
-	@cd backend && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME) .
+	@cd backend && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME) ./cmd/server
 	@echo "$(GREEN)Build complete: backend/bin/$(APP_NAME)$(NC)"
 
 build-all: ## Build for multiple platforms
 	@echo "$(YELLOW)Building for multiple platforms...$(NC)"
 	@cd backend && mkdir -p bin
-	@cd backend && GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME)-linux-amd64 .
-	@cd backend && GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/$(APP_NAME)-linux-arm64 .
-	@cd backend && GOOS=darwin GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME)-darwin-amd64 .
-	@cd backend && GOOS=darwin GOARCH=arm64 go build $(LDFLAGS) -o bin/$(APP_NAME)-darwin-arm64 .
-	@cd backend && GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME)-windows-amd64.exe .
+	@cd backend && GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME)-linux-amd64 ./cmd/server
+	@cd backend && GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/$(APP_NAME)-linux-arm64 ./cmd/server
+	@cd backend && GOOS=darwin GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME)-darwin-amd64 ./cmd/server
+	@cd backend && GOOS=darwin GOARCH=arm64 go build $(LDFLAGS) -o bin/$(APP_NAME)-darwin-arm64 ./cmd/server
+	@cd backend && GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME)-windows-amd64.exe ./cmd/server
 	@echo "$(GREEN)Multi-platform build complete!$(NC)"
 
 ##@ Testing
