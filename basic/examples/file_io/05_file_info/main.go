@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -28,7 +29,7 @@ func main() {
 
 	// Display file information
 	fmt.Println("File Information:")
-	fmt.Println("=".repeat(40))
+	fmt.Println(strings.Repeat("=", 40))
 	fmt.Printf("Name:         %s\n", fileInfo.Name())
 	fmt.Printf("Size:         %d bytes\n", fileInfo.Size())
 	fmt.Printf("Permissions:  %s\n", fileInfo.Mode())
@@ -37,13 +38,4 @@ func main() {
 
 	// Clean up
 	os.Remove(filename)
-}
-
-// Helper function to repeat strings
-func (s string) repeat(count int) string {
-	result := ""
-	for i := 0; i < count; i++ {
-		result += s
-	}
-	return result
 }
