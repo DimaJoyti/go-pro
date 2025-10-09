@@ -44,12 +44,12 @@ func (s *Stack[T]) Push(item T) {
 func (s *Stack[T]) Pop() (T, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	var zero T
 	if len(s.items) == 0 {
 		return zero, ErrEmptyStack
 	}
-	
+
 	n := len(s.items) - 1
 	item := s.items[n]
 	s.items = s.items[:n]
@@ -62,7 +62,7 @@ func (s *Stack[T]) Pop() (T, error) {
 func (s *Stack[T]) Peek() (T, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	var zero T
 	if len(s.items) == 0 {
 		return zero, ErrEmptyStack
@@ -99,7 +99,7 @@ func (s *Stack[T]) Clear() {
 func (s *Stack[T]) ToSlice() []T {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	result := make([]T, len(s.items))
 	for i := 0; i < len(s.items); i++ {
 		result[i] = s.items[len(s.items)-1-i]
@@ -111,11 +111,11 @@ func (s *Stack[T]) ToSlice() []T {
 func (s *Stack[T]) String() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	if len(s.items) == 0 {
 		return "Stack[]"
 	}
-	
+
 	return fmt.Sprintf("Stack%v", s.items)
 }
 
@@ -124,7 +124,7 @@ func (s *Stack[T]) String() string {
 func (s *Stack[T]) Clone() *Stack[T] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	newStack := NewStackWithCapacity[T](len(s.items))
 	newStack.items = make([]T, len(s.items))
 	copy(newStack.items, s.items)
@@ -136,7 +136,7 @@ func (s *Stack[T]) Clone() *Stack[T] {
 func (s *Stack[T]) Reverse() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	for i, j := 0, len(s.items)-1; i < j; i, j = i+1, j-1 {
 		s.items[i], s.items[j] = s.items[j], s.items[i]
 	}
@@ -147,7 +147,7 @@ func (s *Stack[T]) Reverse() {
 func (s *Stack[T]) Contains(item T, equals func(T, T) bool) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	for _, v := range s.items {
 		if equals(v, item) {
 			return true
@@ -161,7 +161,7 @@ func (s *Stack[T]) Contains(item T, equals func(T, T) bool) bool {
 func (s *Stack[T]) Filter(predicate func(T) bool) *Stack[T] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	newStack := NewStack[T]()
 	for _, item := range s.items {
 		if predicate(item) {
@@ -176,7 +176,7 @@ func (s *Stack[T]) Filter(predicate func(T) bool) *Stack[T] {
 func (s *Stack[T]) Map(fn func(T) T) *Stack[T] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	newStack := NewStackWithCapacity[T](len(s.items))
 	for _, item := range s.items {
 		newStack.items = append(newStack.items, fn(item))
@@ -189,9 +189,8 @@ func (s *Stack[T]) Map(fn func(T) T) *Stack[T] {
 func (s *Stack[T]) ForEach(fn func(T)) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	for i := len(s.items) - 1; i >= 0; i-- {
 		fn(s.items[i])
 	}
 }
-

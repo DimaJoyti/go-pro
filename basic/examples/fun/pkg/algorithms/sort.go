@@ -14,11 +14,11 @@ func MergeSort[T constraints.Ordered](arr []T) []T {
 	if len(arr) <= 1 {
 		return arr
 	}
-	
+
 	mid := len(arr) / 2
 	left := MergeSort(arr[:mid])
 	right := MergeSort(arr[mid:])
-	
+
 	return merge(left, right)
 }
 
@@ -26,7 +26,7 @@ func MergeSort[T constraints.Ordered](arr []T) []T {
 func merge[T constraints.Ordered](left, right []T) []T {
 	result := make([]T, 0, len(left)+len(right))
 	i, j := 0, 0
-	
+
 	for i < len(left) && j < len(right) {
 		if left[i] <= right[j] {
 			result = append(result, left[i])
@@ -36,11 +36,11 @@ func merge[T constraints.Ordered](left, right []T) []T {
 			j++
 		}
 	}
-	
+
 	// Append remaining elements
 	result = append(result, left[i:]...)
 	result = append(result, right[j:]...)
-	
+
 	return result
 }
 
@@ -52,32 +52,32 @@ func MergeSortConcurrent[T constraints.Ordered](arr []T, depth int) []T {
 	if len(arr) <= 1 {
 		return arr
 	}
-	
+
 	// Use sequential sort for small arrays or deep recursion
 	if len(arr) < 1000 || depth <= 0 {
 		return MergeSort(arr)
 	}
-	
+
 	mid := len(arr) / 2
 	var left, right []T
 	var wg sync.WaitGroup
-	
+
 	wg.Add(2)
-	
+
 	// Sort left half concurrently
 	go func() {
 		defer wg.Done()
 		left = MergeSortConcurrent(arr[:mid], depth-1)
 	}()
-	
+
 	// Sort right half concurrently
 	go func() {
 		defer wg.Done()
 		right = MergeSortConcurrent(arr[mid:], depth-1)
 	}()
-	
+
 	wg.Wait()
-	
+
 	return merge(left, right)
 }
 
@@ -103,14 +103,14 @@ func quickSortHelper[T constraints.Ordered](arr []T, low, high int) {
 func partition[T constraints.Ordered](arr []T, low, high int) int {
 	pivot := arr[high]
 	i := low - 1
-	
+
 	for j := low; j < high; j++ {
 		if arr[j] < pivot {
 			i++
 			arr[i], arr[j] = arr[j], arr[i]
 		}
 	}
-	
+
 	arr[i+1], arr[high] = arr[high], arr[i+1]
 	return i + 1
 }
@@ -144,7 +144,7 @@ func InsertionSort[T constraints.Ordered](arr []T) {
 	for i := 1; i < len(arr); i++ {
 		key := arr[i]
 		j := i - 1
-		
+
 		for j >= 0 && arr[j] > key {
 			arr[j+1] = arr[j]
 			j--
@@ -223,14 +223,14 @@ func sortWithComparatorHelper[T any](arr []T, low, high int, comparator func(a, 
 func partitionWithComparator[T any](arr []T, low, high int, comparator func(a, b T) bool) int {
 	pivot := arr[high]
 	i := low - 1
-	
+
 	for j := low; j < high; j++ {
 		if comparator(arr[j], pivot) {
 			i++
 			arr[i], arr[j] = arr[j], arr[i]
 		}
 	}
-	
+
 	arr[i+1], arr[high] = arr[high], arr[i+1]
 	return i + 1
 }
@@ -255,7 +255,7 @@ func TopK[T constraints.Ordered](arr []T, k int) []T {
 		Reverse(sorted)
 		return sorted
 	}
-	
+
 	// Use a simple approach: sort and take top k
 	sorted := make([]T, len(arr))
 	copy(sorted, arr)
@@ -276,10 +276,9 @@ func BottomK[T constraints.Ordered](arr []T, k int) []T {
 		QuickSort(sorted)
 		return sorted
 	}
-	
+
 	sorted := make([]T, len(arr))
 	copy(sorted, arr)
 	QuickSort(sorted)
 	return sorted[:k]
 }
-

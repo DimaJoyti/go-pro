@@ -31,12 +31,12 @@ type Cache[K comparable, V any] struct {
 
 // CacheStats tracks cache performance metrics
 type CacheStats struct {
-	mu         sync.RWMutex
-	Hits       int64
-	Misses     int64
-	Sets       int64
-	Deletes    int64
-	Evictions  int64
+	mu          sync.RWMutex
+	Hits        int64
+	Misses      int64
+	Sets        int64
+	Deletes     int64
+	Evictions   int64
 	Expirations int64
 }
 
@@ -50,10 +50,10 @@ func NewCache[K comparable, V any](defaultTTL time.Duration, maxSize int) *Cache
 		stopCleanup: make(chan struct{}),
 		stats:       &CacheStats{},
 	}
-	
+
 	// Start cleanup goroutine
 	go cache.cleanupExpired()
-	
+
 	return cache
 }
 
@@ -67,23 +67,23 @@ func (c *Cache[K, V]) Set(key K, value V) {
 func (c *Cache[K, V]) SetWithTTL(key K, value V, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	var expiration time.Time
 	if ttl > 0 {
 		expiration = time.Now().Add(ttl)
 	}
-	
+
 	c.items[key] = &CacheItem[V]{
 		Value:      value,
 		Expiration: expiration,
 		AccessTime: time.Now(),
 		HitCount:   0,
 	}
-	
+
 	c.stats.mu.Lock()
 	c.stats.Sets++
 	c.stats.mu.Unlock()
-	
+
 	// Check if we need to evict items
 	if c.maxSize > 0 && len(c.items) > c.maxSize {
 		c.evictOldest()
@@ -94,17 +94,17 @@ func (c *Cache[K, V]) SetWithTTL(key K, value V, ttl time.Duration) {
 func (c *Cache[K, V]) Get(key K) (V, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	item, exists := c.items[key]
 	if !exists {
 		c.stats.mu.Lock()
 		c.stats.Misses++
 		c.stats.mu.Unlock()
-		
+
 		var zero V
 		return zero, false
 	}
-	
+
 	// Check if expired
 	if item.IsExpired() {
 		delete(c.items, key)
@@ -112,19 +112,19 @@ func (c *Cache[K, V]) Get(key K) (V, bool) {
 		c.stats.Misses++
 		c.stats.Expirations++
 		c.stats.mu.Unlock()
-		
+
 		var zero V
 		return zero, false
 	}
-	
+
 	// Update access time and hit count
 	item.AccessTime = time.Now()
 	item.HitCount++
-	
+
 	c.stats.mu.Lock()
 	c.stats.Hits++
 	c.stats.mu.Unlock()
-	
+
 	return item.Value, true
 }
 
@@ -133,7 +133,7 @@ func (c *Cache[K, V]) GetOrSet(key K, defaultValue V) V {
 	if value, found := c.Get(key); found {
 		return value
 	}
-	
+
 	c.Set(key, defaultValue)
 	return defaultValue
 }
@@ -143,7 +143,7 @@ func (c *Cache[K, V]) GetOrCompute(key K, compute func() V) V {
 	if value, found := c.Get(key); found {
 		return value
 	}
-	
+
 	value := compute()
 	c.Set(key, value)
 	return value
@@ -153,7 +153,7 @@ func (c *Cache[K, V]) GetOrCompute(key K, compute func() V) V {
 func (c *Cache[K, V]) Delete(key K) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if _, exists := c.items[key]; exists {
 		delete(c.items, key)
 		c.stats.mu.Lock()
@@ -161,7 +161,7 @@ func (c *Cache[K, V]) Delete(key K) bool {
 		c.stats.mu.Unlock()
 		return true
 	}
-	
+
 	return false
 }
 
@@ -169,7 +169,7 @@ func (c *Cache[K, V]) Delete(key K) bool {
 func (c *Cache[K, V]) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	c.items = make(map[K]*CacheItem[V])
 }
 
@@ -177,7 +177,7 @@ func (c *Cache[K, V]) Clear() {
 func (c *Cache[K, V]) Size() int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	return len(c.items)
 }
 
@@ -185,12 +185,12 @@ func (c *Cache[K, V]) Size() int {
 func (c *Cache[K, V]) Keys() []K {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	keys := make([]K, 0, len(c.items))
 	for key := range c.items {
 		keys = append(keys, key)
 	}
-	
+
 	return keys
 }
 
@@ -198,12 +198,12 @@ func (c *Cache[K, V]) Keys() []K {
 func (c *Cache[K, V]) Has(key K) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	item, exists := c.items[key]
 	if !exists {
 		return false
 	}
-	
+
 	return !item.IsExpired()
 }
 
@@ -211,14 +211,14 @@ func (c *Cache[K, V]) Has(key K) bool {
 func (c *Cache[K, V]) GetAll() map[K]V {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	result := make(map[K]V)
 	for key, item := range c.items {
 		if !item.IsExpired() {
 			result[key] = item.Value
 		}
 	}
-	
+
 	return result
 }
 
@@ -226,13 +226,13 @@ func (c *Cache[K, V]) GetAll() map[K]V {
 func (c *Cache[K, V]) GetStats() CacheStats {
 	c.stats.mu.RLock()
 	defer c.stats.mu.RUnlock()
-	
+
 	return CacheStats{
-		Hits:       c.stats.Hits,
-		Misses:     c.stats.Misses,
-		Sets:       c.stats.Sets,
-		Deletes:    c.stats.Deletes,
-		Evictions:  c.stats.Evictions,
+		Hits:        c.stats.Hits,
+		Misses:      c.stats.Misses,
+		Sets:        c.stats.Sets,
+		Deletes:     c.stats.Deletes,
+		Evictions:   c.stats.Evictions,
 		Expirations: c.stats.Expirations,
 	}
 }
@@ -251,7 +251,7 @@ func (c *Cache[K, V]) HitRate() float64 {
 func (c *Cache[K, V]) ResetStats() {
 	c.stats.mu.Lock()
 	defer c.stats.mu.Unlock()
-	
+
 	c.stats.Hits = 0
 	c.stats.Misses = 0
 	c.stats.Sets = 0
@@ -269,7 +269,7 @@ func (c *Cache[K, V]) Stop() {
 func (c *Cache[K, V]) cleanupExpired() {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-c.stopCleanup:
@@ -284,7 +284,7 @@ func (c *Cache[K, V]) cleanupExpired() {
 				}
 			}
 			c.mu.Unlock()
-			
+
 			if expiredCount > 0 {
 				c.stats.mu.Lock()
 				c.stats.Expirations += int64(expiredCount)
@@ -299,7 +299,7 @@ func (c *Cache[K, V]) evictOldest() {
 	var oldestKey K
 	var oldestTime time.Time
 	first := true
-	
+
 	for key, item := range c.items {
 		if first || item.AccessTime.Before(oldestTime) {
 			oldestKey = key
@@ -307,7 +307,7 @@ func (c *Cache[K, V]) evictOldest() {
 			first = false
 		}
 	}
-	
+
 	if !first {
 		delete(c.items, oldestKey)
 		c.stats.mu.Lock()
@@ -339,13 +339,13 @@ func (lc *LoadingCache[K, V]) Get(key K) (V, error) {
 	if value, found := lc.cache.Get(key); found {
 		return value, nil
 	}
-	
+
 	value, err := lc.loader(key)
 	if err != nil {
 		var zero V
 		return zero, err
 	}
-	
+
 	lc.cache.Set(key, value)
 	return value, nil
 }
@@ -355,7 +355,7 @@ func (lc *LoadingCache[K, V]) GetWithContext(ctx context.Context, key K) (V, err
 	if value, found := lc.cache.Get(key); found {
 		return value, nil
 	}
-	
+
 	// Check if context is already cancelled
 	select {
 	case <-ctx.Done():
@@ -363,13 +363,13 @@ func (lc *LoadingCache[K, V]) GetWithContext(ctx context.Context, key K) (V, err
 		return zero, ctx.Err()
 	default:
 	}
-	
+
 	value, err := lc.loader(key)
 	if err != nil {
 		var zero V
 		return zero, err
 	}
-	
+
 	lc.cache.Set(key, value)
 	return value, nil
 }
@@ -383,4 +383,3 @@ func (lc *LoadingCache[K, V]) Invalidate(key K) {
 func (lc *LoadingCache[K, V]) Stop() {
 	lc.cache.Stop()
 }
-

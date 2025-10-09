@@ -7,11 +7,11 @@ import (
 
 // LRUCache implements a Least Recently Used cache with generic types
 type LRUCache[K comparable, V any] struct {
-	capacity int
-	items    map[K]*list.Element
+	capacity  int
+	items     map[K]*list.Element
 	evictList *list.List
-	mu       sync.RWMutex
-	stats    *CacheStats
+	mu        sync.RWMutex
+	stats     *CacheStats
 }
 
 // entry represents a key-value pair in the LRU cache
@@ -34,21 +34,21 @@ func NewLRUCache[K comparable, V any](capacity int) *LRUCache[K, V] {
 func (c *LRUCache[K, V]) Get(key K) (V, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if elem, found := c.items[key]; found {
 		c.evictList.MoveToFront(elem)
-		
+
 		c.stats.mu.Lock()
 		c.stats.Hits++
 		c.stats.mu.Unlock()
-		
+
 		return elem.Value.(*entry[K, V]).value, true
 	}
-	
+
 	c.stats.mu.Lock()
 	c.stats.Misses++
 	c.stats.mu.Unlock()
-	
+
 	var zero V
 	return zero, false
 }
@@ -57,27 +57,27 @@ func (c *LRUCache[K, V]) Get(key K) (V, bool) {
 func (c *LRUCache[K, V]) Set(key K, value V) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	// Check if key already exists
 	if elem, found := c.items[key]; found {
 		c.evictList.MoveToFront(elem)
 		elem.Value.(*entry[K, V]).value = value
-		
+
 		c.stats.mu.Lock()
 		c.stats.Sets++
 		c.stats.mu.Unlock()
 		return
 	}
-	
+
 	// Add new entry
 	ent := &entry[K, V]{key: key, value: value}
 	elem := c.evictList.PushFront(ent)
 	c.items[key] = elem
-	
+
 	c.stats.mu.Lock()
 	c.stats.Sets++
 	c.stats.mu.Unlock()
-	
+
 	// Evict oldest if over capacity
 	if c.evictList.Len() > c.capacity {
 		c.removeOldest()
@@ -88,16 +88,16 @@ func (c *LRUCache[K, V]) Set(key K, value V) {
 func (c *LRUCache[K, V]) Delete(key K) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if elem, found := c.items[key]; found {
 		c.removeElement(elem)
-		
+
 		c.stats.mu.Lock()
 		c.stats.Deletes++
 		c.stats.mu.Unlock()
 		return true
 	}
-	
+
 	return false
 }
 
@@ -105,11 +105,11 @@ func (c *LRUCache[K, V]) Delete(key K) bool {
 func (c *LRUCache[K, V]) Peek(key K) (V, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	if elem, found := c.items[key]; found {
 		return elem.Value.(*entry[K, V]).value, true
 	}
-	
+
 	var zero V
 	return zero, false
 }
@@ -118,7 +118,7 @@ func (c *LRUCache[K, V]) Peek(key K) (V, bool) {
 func (c *LRUCache[K, V]) Contains(key K) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	_, found := c.items[key]
 	return found
 }
@@ -127,7 +127,7 @@ func (c *LRUCache[K, V]) Contains(key K) bool {
 func (c *LRUCache[K, V]) Size() int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	return c.evictList.Len()
 }
 
@@ -140,7 +140,7 @@ func (c *LRUCache[K, V]) Capacity() int {
 func (c *LRUCache[K, V]) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	c.items = make(map[K]*list.Element)
 	c.evictList.Init()
 }
@@ -149,12 +149,12 @@ func (c *LRUCache[K, V]) Clear() {
 func (c *LRUCache[K, V]) Keys() []K {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	keys := make([]K, 0, c.evictList.Len())
 	for elem := c.evictList.Front(); elem != nil; elem = elem.Next() {
 		keys = append(keys, elem.Value.(*entry[K, V]).key)
 	}
-	
+
 	return keys
 }
 
@@ -162,14 +162,14 @@ func (c *LRUCache[K, V]) Keys() []K {
 func (c *LRUCache[K, V]) GetOldest() (K, V, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	elem := c.evictList.Back()
 	if elem == nil {
 		var zeroK K
 		var zeroV V
 		return zeroK, zeroV, false
 	}
-	
+
 	ent := elem.Value.(*entry[K, V])
 	return ent.key, ent.value, true
 }
@@ -178,14 +178,14 @@ func (c *LRUCache[K, V]) GetOldest() (K, V, bool) {
 func (c *LRUCache[K, V]) GetNewest() (K, V, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	elem := c.evictList.Front()
 	if elem == nil {
 		var zeroK K
 		var zeroV V
 		return zeroK, zeroV, false
 	}
-	
+
 	ent := elem.Value.(*entry[K, V])
 	return ent.key, ent.value, true
 }
@@ -194,7 +194,7 @@ func (c *LRUCache[K, V]) GetNewest() (K, V, bool) {
 func (c *LRUCache[K, V]) GetStats() CacheStats {
 	c.stats.mu.RLock()
 	defer c.stats.mu.RUnlock()
-	
+
 	return CacheStats{
 		Hits:      c.stats.Hits,
 		Misses:    c.stats.Misses,
@@ -218,7 +218,7 @@ func (c *LRUCache[K, V]) HitRate() float64 {
 func (c *LRUCache[K, V]) ResetStats() {
 	c.stats.mu.Lock()
 	defer c.stats.mu.Unlock()
-	
+
 	c.stats.Hits = 0
 	c.stats.Misses = 0
 	c.stats.Sets = 0
@@ -231,7 +231,7 @@ func (c *LRUCache[K, V]) removeOldest() {
 	elem := c.evictList.Back()
 	if elem != nil {
 		c.removeElement(elem)
-		
+
 		c.stats.mu.Lock()
 		c.stats.Evictions++
 		c.stats.mu.Unlock()
@@ -249,7 +249,7 @@ func (c *LRUCache[K, V]) removeElement(elem *list.Element) {
 func (c *LRUCache[K, V]) ForEach(fn func(K, V)) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	for elem := c.evictList.Front(); elem != nil; elem = elem.Next() {
 		ent := elem.Value.(*entry[K, V])
 		fn(ent.key, ent.value)
@@ -261,9 +261,9 @@ func (c *LRUCache[K, V]) ForEach(fn func(K, V)) {
 func (c *LRUCache[K, V]) Resize(newCapacity int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	c.capacity = newCapacity
-	
+
 	// Evict items if over new capacity
 	for c.evictList.Len() > c.capacity {
 		c.removeOldest()
@@ -302,21 +302,21 @@ func NewLFUCache[K comparable, V any](capacity int) *LFUCache[K, V] {
 func (c *LFUCache[K, V]) Get(key K) (V, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if ent, found := c.items[key]; found {
 		c.incrementFreq(ent)
-		
+
 		c.stats.mu.Lock()
 		c.stats.Hits++
 		c.stats.mu.Unlock()
-		
+
 		return ent.value, true
 	}
-	
+
 	c.stats.mu.Lock()
 	c.stats.Misses++
 	c.stats.mu.Unlock()
-	
+
 	var zero V
 	return zero, false
 }
@@ -325,42 +325,42 @@ func (c *LFUCache[K, V]) Get(key K) (V, bool) {
 func (c *LFUCache[K, V]) Set(key K, value V) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.capacity <= 0 {
 		return
 	}
-	
+
 	// Update existing entry
 	if ent, found := c.items[key]; found {
 		ent.value = value
 		c.incrementFreq(ent)
-		
+
 		c.stats.mu.Lock()
 		c.stats.Sets++
 		c.stats.mu.Unlock()
 		return
 	}
-	
+
 	// Evict if at capacity
 	if len(c.items) >= c.capacity {
 		c.evictLFU()
 	}
-	
+
 	// Add new entry
 	ent := &lfuEntry[K, V]{
 		key:   key,
 		value: value,
 		freq:  1,
 	}
-	
+
 	if c.freqList[1] == nil {
 		c.freqList[1] = list.New()
 	}
-	
+
 	ent.elem = c.freqList[1].PushFront(ent)
 	c.items[key] = ent
 	c.minFreq = 1
-	
+
 	c.stats.mu.Lock()
 	c.stats.Sets++
 	c.stats.mu.Unlock()
@@ -370,19 +370,19 @@ func (c *LFUCache[K, V]) Set(key K, value V) {
 func (c *LFUCache[K, V]) incrementFreq(ent *lfuEntry[K, V]) {
 	freq := ent.freq
 	c.freqList[freq].Remove(ent.elem)
-	
+
 	if c.freqList[freq].Len() == 0 {
 		delete(c.freqList, freq)
 		if c.minFreq == freq {
 			c.minFreq++
 		}
 	}
-	
+
 	ent.freq++
 	if c.freqList[ent.freq] == nil {
 		c.freqList[ent.freq] = list.New()
 	}
-	
+
 	ent.elem = c.freqList[ent.freq].PushFront(ent)
 }
 
@@ -394,7 +394,7 @@ func (c *LFUCache[K, V]) evictLFU() {
 			ent := elem.Value.(*lfuEntry[K, V])
 			lst.Remove(elem)
 			delete(c.items, ent.key)
-			
+
 			c.stats.mu.Lock()
 			c.stats.Evictions++
 			c.stats.mu.Unlock()
@@ -406,7 +406,6 @@ func (c *LFUCache[K, V]) evictLFU() {
 func (c *LFUCache[K, V]) Size() int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	return len(c.items)
 }
-

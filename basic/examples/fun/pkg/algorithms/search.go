@@ -9,21 +9,21 @@ import "golang.org/x/exp/constraints"
 func BinarySearch[T constraints.Ordered](arr []T, target T) int {
 	left := 0
 	right := len(arr) - 1
-	
+
 	for left <= right {
 		mid := left + (right-left)/2
-		
+
 		if arr[mid] == target {
 			return mid
 		}
-		
+
 		if arr[mid] < target {
 			left = mid + 1
 		} else {
 			right = mid - 1
 		}
 	}
-	
+
 	return -1 // Not found
 }
 
@@ -32,20 +32,21 @@ func BinarySearch[T constraints.Ordered](arr []T, target T) int {
 // Time complexity: O(log n)
 // Space complexity: O(log n) due to recursion stack
 func BinarySearchRecursive[T constraints.Ordered](arr []T, target T, left, right int) int {
-	if left > right {
-		return -1 // Not found
+	// Bounds validation
+	if left < 0 || right >= len(arr) || left > right {
+		return -1
 	}
-	
+
 	mid := left + (right-left)/2
-	
+
 	if arr[mid] == target {
 		return mid
 	}
-	
+
 	if arr[mid] < target {
 		return BinarySearchRecursive(arr, target, mid+1, right)
 	}
-	
+
 	return BinarySearchRecursive(arr, target, left, mid-1)
 }
 
@@ -56,10 +57,10 @@ func FindFirstOccurrence[T constraints.Ordered](arr []T, target T) int {
 	left := 0
 	right := len(arr) - 1
 	result := -1
-	
+
 	for left <= right {
 		mid := left + (right-left)/2
-		
+
 		if arr[mid] == target {
 			result = mid
 			right = mid - 1 // Continue searching in left half
@@ -69,7 +70,7 @@ func FindFirstOccurrence[T constraints.Ordered](arr []T, target T) int {
 			right = mid - 1
 		}
 	}
-	
+
 	return result
 }
 
@@ -80,10 +81,10 @@ func FindLastOccurrence[T constraints.Ordered](arr []T, target T) int {
 	left := 0
 	right := len(arr) - 1
 	result := -1
-	
+
 	for left <= right {
 		mid := left + (right-left)/2
-		
+
 		if arr[mid] == target {
 			result = mid
 			left = mid + 1 // Continue searching in right half
@@ -93,7 +94,7 @@ func FindLastOccurrence[T constraints.Ordered](arr []T, target T) int {
 			right = mid - 1
 		}
 	}
-	
+
 	return result
 }
 
@@ -104,7 +105,7 @@ func CountOccurrences[T constraints.Ordered](arr []T, target T) int {
 	if first == -1 {
 		return 0
 	}
-	
+
 	last := FindLastOccurrence(arr, target)
 	return last - first + 1
 }
@@ -168,17 +169,17 @@ func FindMin[T constraints.Ordered](arr []T) (T, int) {
 		var zero T
 		return zero, -1
 	}
-	
+
 	minVal := arr[0]
 	minIdx := 0
-	
+
 	for i := 1; i < len(arr); i++ {
 		if arr[i] < minVal {
 			minVal = arr[i]
 			minIdx = i
 		}
 	}
-	
+
 	return minVal, minIdx
 }
 
@@ -190,17 +191,17 @@ func FindMax[T constraints.Ordered](arr []T) (T, int) {
 		var zero T
 		return zero, -1
 	}
-	
+
 	maxVal := arr[0]
 	maxIdx := 0
-	
+
 	for i := 1; i < len(arr); i++ {
 		if arr[i] > maxVal {
 			maxVal = arr[i]
 			maxIdx = i
 		}
 	}
-	
+
 	return maxVal, maxIdx
 }
 
@@ -212,10 +213,10 @@ func FindMinMax[T constraints.Ordered](arr []T) (T, int, T, int) {
 		var zero T
 		return zero, -1, zero, -1
 	}
-	
+
 	minVal, maxVal := arr[0], arr[0]
 	minIdx, maxIdx := 0, 0
-	
+
 	for i := 1; i < len(arr); i++ {
 		if arr[i] < minVal {
 			minVal = arr[i]
@@ -226,7 +227,7 @@ func FindMinMax[T constraints.Ordered](arr []T) (T, int, T, int) {
 			maxIdx = i
 		}
 	}
-	
+
 	return minVal, minIdx, maxVal, maxIdx
 }
 
@@ -257,4 +258,3 @@ func ContainsAny[T comparable](arr []T, targets []T) bool {
 	}
 	return false
 }
-

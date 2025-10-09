@@ -19,13 +19,13 @@ var (
 func WithTimeout(timeout time.Duration, fn func(context.Context) error) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	
+
 	errChan := make(chan error, 1)
-	
+
 	go func() {
 		errChan <- fn(ctx)
 	}()
-	
+
 	select {
 	case err := <-errChan:
 		return err
@@ -38,13 +38,13 @@ func WithTimeout(timeout time.Duration, fn func(context.Context) error) error {
 func WithDeadline(deadline time.Time, fn func(context.Context) error) error {
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
-	
+
 	errChan := make(chan error, 1)
-	
+
 	go func() {
 		errChan <- fn(ctx)
 	}()
-	
+
 	select {
 	case err := <-errChan:
 		return err
@@ -56,20 +56,20 @@ func WithDeadline(deadline time.Time, fn func(context.Context) error) error {
 // WithCancel executes a function with cancellation support
 func WithCancel(fn func(context.Context) error) (error, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	errChan := make(chan error, 1)
-	
+
 	go func() {
 		errChan <- fn(ctx)
 	}()
-	
+
 	go func() {
 		select {
 		case <-ctx.Done():
 			errChan <- ErrCancelled
 		}
 	}()
-	
+
 	return <-errChan, cancel
 }
 
@@ -77,20 +77,20 @@ func WithCancel(fn func(context.Context) error) (error, context.CancelFunc) {
 func ParallelWithTimeout(timeout time.Duration, fns ...func(context.Context) error) []error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	
+
 	errors := make([]error, len(fns))
 	var wg sync.WaitGroup
-	
+
 	for i, fn := range fns {
 		wg.Add(1)
 		go func(index int, f func(context.Context) error) {
 			defer wg.Done()
-			
+
 			errChan := make(chan error, 1)
 			go func() {
 				errChan <- f(ctx)
 			}()
-			
+
 			select {
 			case err := <-errChan:
 				errors[index] = err
@@ -99,7 +99,7 @@ func ParallelWithTimeout(timeout time.Duration, fns ...func(context.Context) err
 			}
 		}(i, fn)
 	}
-	
+
 	wg.Wait()
 	return errors
 }
@@ -108,7 +108,7 @@ func ParallelWithTimeout(timeout time.Duration, fns ...func(context.Context) err
 func RetryWithContext(ctx context.Context, maxAttempts int, initialDelay time.Duration, fn func() error) error {
 	var lastErr error
 	delay := initialDelay
-	
+
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		// Check if context is cancelled
 		select {
@@ -116,13 +116,13 @@ func RetryWithContext(ctx context.Context, maxAttempts int, initialDelay time.Du
 			return ctx.Err()
 		default:
 		}
-		
+
 		// Try the operation
 		lastErr = fn()
 		if lastErr == nil {
 			return nil
 		}
-		
+
 		// Don't sleep after the last attempt
 		if attempt < maxAttempts {
 			select {
@@ -133,7 +133,7 @@ func RetryWithContext(ctx context.Context, maxAttempts int, initialDelay time.Du
 			}
 		}
 	}
-	
+
 	return fmt.Errorf("failed after %d attempts: %w", maxAttempts, lastErr)
 }
 
@@ -159,7 +159,7 @@ func (cv *ContextValue[T]) Value(ctx context.Context) (T, bool) {
 		var zero T
 		return zero, false
 	}
-	
+
 	typedVal, ok := val.(T)
 	return typedVal, ok
 }
@@ -185,20 +185,20 @@ type CancellableTask struct {
 // NewCancellableTask creates a new cancellable task
 func NewCancellableTask(fn func(context.Context) error) *CancellableTask {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	task := &CancellableTask{
 		ctx:    ctx,
 		cancel: cancel,
 		done:   make(chan struct{}),
 	}
-	
+
 	go func() {
 		defer close(task.done)
 		task.mu.Lock()
 		task.err = fn(ctx)
 		task.mu.Unlock()
 	}()
-	
+
 	return task
 }
 
@@ -260,15 +260,15 @@ func NewTaskGroup(ctx context.Context) *TaskGroup {
 // Go runs a function in the task group
 func (tg *TaskGroup) Go(fn func(context.Context) error) {
 	tg.wg.Add(1)
-	
+
 	go func() {
 		defer tg.wg.Done()
-		
+
 		if err := fn(tg.ctx); err != nil {
 			tg.mu.Lock()
 			tg.errors = append(tg.errors, err)
 			tg.mu.Unlock()
-			
+
 			// Cancel all other tasks on first error
 			tg.cancel()
 		}
@@ -278,14 +278,14 @@ func (tg *TaskGroup) Go(fn func(context.Context) error) {
 // Wait waits for all tasks to complete
 func (tg *TaskGroup) Wait() error {
 	tg.wg.Wait()
-	
+
 	tg.mu.Lock()
 	defer tg.mu.Unlock()
-	
+
 	if len(tg.errors) > 0 {
 		return tg.errors[0]
 	}
-	
+
 	return nil
 }
 
@@ -293,7 +293,7 @@ func (tg *TaskGroup) Wait() error {
 func (tg *TaskGroup) Errors() []error {
 	tg.mu.Lock()
 	defer tg.mu.Unlock()
-	
+
 	errorsCopy := make([]error, len(tg.errors))
 	copy(errorsCopy, tg.errors)
 	return errorsCopy
@@ -303,4 +303,3 @@ func (tg *TaskGroup) Errors() []error {
 func (tg *TaskGroup) Cancel() {
 	tg.cancel()
 }
-

@@ -11,7 +11,7 @@ import (
 // Time complexity: O(max(task durations))
 func RunConcurrent(tasks []func()) {
 	var wg sync.WaitGroup
-	
+
 	for _, task := range tasks {
 		wg.Add(1)
 		go func(t func()) {
@@ -19,7 +19,7 @@ func RunConcurrent(tasks []func()) {
 			t()
 		}(task)
 	}
-	
+
 	wg.Wait()
 }
 
@@ -27,12 +27,12 @@ func RunConcurrent(tasks []func()) {
 func RunConcurrentWithContext(ctx context.Context, tasks []func(context.Context)) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error, len(tasks))
-	
+
 	for _, task := range tasks {
 		wg.Add(1)
 		go func(t func(context.Context)) {
 			defer wg.Done()
-			
+
 			// Check if context is already cancelled
 			select {
 			case <-ctx.Done():
@@ -40,21 +40,21 @@ func RunConcurrentWithContext(ctx context.Context, tasks []func(context.Context)
 				return
 			default:
 			}
-			
+
 			t(ctx)
 		}(task)
 	}
-	
+
 	wg.Wait()
 	close(errChan)
-	
+
 	// Return first error if any
 	for err := range errChan {
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -62,13 +62,13 @@ func RunConcurrentWithContext(ctx context.Context, tasks []func(context.Context)
 func RunWithTimeout(timeout time.Duration, fn func() error) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	
+
 	errChan := make(chan error, 1)
-	
+
 	go func() {
 		errChan <- fn()
 	}()
-	
+
 	select {
 	case err := <-errChan:
 		return err
@@ -82,9 +82,9 @@ func RunWithTimeout(timeout time.Duration, fn func() error) error {
 func FanOut[T any, R any](input []T, workers int, process func(T) R) []R {
 	jobs := make(chan T, len(input))
 	results := make(chan R, len(input))
-	
+
 	var wg sync.WaitGroup
-	
+
 	// Start workers
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
@@ -95,25 +95,25 @@ func FanOut[T any, R any](input []T, workers int, process func(T) R) []R {
 			}
 		}()
 	}
-	
+
 	// Send jobs
 	for _, item := range input {
 		jobs <- item
 	}
 	close(jobs)
-	
+
 	// Wait for workers and close results
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
-	
+
 	// Collect results
 	output := make([]R, 0, len(input))
 	for result := range results {
 		output = append(output, result)
 	}
-	
+
 	return output
 }
 
@@ -121,7 +121,7 @@ func FanOut[T any, R any](input []T, workers int, process func(T) R) []R {
 func FanIn[T any](channels ...<-chan T) <-chan T {
 	out := make(chan T)
 	var wg sync.WaitGroup
-	
+
 	// Start a goroutine for each input channel
 	for _, ch := range channels {
 		wg.Add(1)
@@ -132,13 +132,13 @@ func FanIn[T any](channels ...<-chan T) <-chan T {
 			}
 		}(ch)
 	}
-	
+
 	// Close output channel when all inputs are done
 	go func() {
 		wg.Wait()
 		close(out)
 	}()
-	
+
 	return out
 }
 
@@ -154,7 +154,7 @@ func Pipeline[T any](input <-chan T, stages ...func(<-chan T) <-chan T) <-chan T
 // Broadcast sends a value to multiple channels
 func Broadcast[T any](value T, channels ...chan<- T) {
 	var wg sync.WaitGroup
-	
+
 	for _, ch := range channels {
 		wg.Add(1)
 		go func(c chan<- T) {
@@ -162,7 +162,7 @@ func Broadcast[T any](value T, channels ...chan<- T) {
 			c <- value
 		}(ch)
 	}
-	
+
 	wg.Wait()
 }
 
@@ -218,13 +218,13 @@ func NewBarrier(n int) *Barrier {
 func (b *Barrier) Wait() {
 	b.mu.Lock()
 	b.count--
-	
+
 	if b.count == 0 {
 		close(b.ch)
 		b.mu.Unlock()
 		return
 	}
-	
+
 	ch := b.ch
 	b.mu.Unlock()
 	<-ch
@@ -333,7 +333,7 @@ func (m *SafeMap[K, V]) Len() int {
 func (m *SafeMap[K, V]) Keys() []K {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	keys := make([]K, 0, len(m.data))
 	for k := range m.data {
 		keys = append(keys, k)
@@ -345,7 +345,7 @@ func (m *SafeMap[K, V]) Keys() []K {
 func (m *SafeMap[K, V]) ForEach(fn func(K, V)) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	for k, v := range m.data {
 		fn(k, v)
 	}
@@ -357,4 +357,3 @@ func (m *SafeMap[K, V]) String() string {
 	defer m.mu.RUnlock()
 	return fmt.Sprintf("SafeMap%v", m.data)
 }
-

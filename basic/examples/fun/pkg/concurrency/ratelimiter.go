@@ -25,15 +25,15 @@ func NewRateLimiter(maxRate int, interval time.Duration) *RateLimiter {
 		interval: interval,
 		stopChan: make(chan struct{}),
 	}
-	
+
 	// Fill the token bucket initially
 	for i := 0; i < maxRate; i++ {
 		rl.tokens <- struct{}{}
 	}
-	
+
 	// Start the token refill goroutine
 	go rl.refillTokens()
-	
+
 	return rl
 }
 
@@ -41,7 +41,7 @@ func NewRateLimiter(maxRate int, interval time.Duration) *RateLimiter {
 func (rl *RateLimiter) refillTokens() {
 	ticker := time.NewTicker(rl.interval / time.Duration(rl.maxRate))
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-rl.stopChan:
@@ -86,10 +86,13 @@ func (rl *RateLimiter) WaitWithContext(ctx context.Context) error {
 // TryWait attempts to wait for a token with a timeout
 // Returns true if token acquired, false if timeout
 func (rl *RateLimiter) TryWait(timeout time.Duration) bool {
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
 	select {
 	case <-rl.tokens:
 		return true
-	case <-time.After(timeout):
+	case <-timer.C:
 		return false
 	}
 }
@@ -103,10 +106,10 @@ func (rl *RateLimiter) Stop() {
 
 // SlidingWindowRateLimiter implements a sliding window rate limiter
 type SlidingWindowRateLimiter struct {
-	mu        sync.Mutex
-	requests  []time.Time
-	maxRate   int
-	window    time.Duration
+	mu       sync.Mutex
+	requests []time.Time
+	maxRate  int
+	window   time.Duration
 }
 
 // NewSlidingWindowRateLimiter creates a new sliding window rate limiter
@@ -122,10 +125,10 @@ func NewSlidingWindowRateLimiter(maxRate int, window time.Duration) *SlidingWind
 func (rl *SlidingWindowRateLimiter) Allow() bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	
+
 	now := time.Now()
 	cutoff := now.Add(-rl.window)
-	
+
 	// Remove old requests outside the window
 	validRequests := make([]time.Time, 0, len(rl.requests))
 	for _, t := range rl.requests {
@@ -134,13 +137,13 @@ func (rl *SlidingWindowRateLimiter) Allow() bool {
 		}
 	}
 	rl.requests = validRequests
-	
+
 	// Check if we can allow this request
 	if len(rl.requests) < rl.maxRate {
 		rl.requests = append(rl.requests, now)
 		return true
 	}
-	
+
 	return false
 }
 
@@ -148,17 +151,17 @@ func (rl *SlidingWindowRateLimiter) Allow() bool {
 func (rl *SlidingWindowRateLimiter) Count() int {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	
+
 	now := time.Now()
 	cutoff := now.Add(-rl.window)
-	
+
 	count := 0
 	for _, t := range rl.requests {
 		if t.After(cutoff) {
 			count++
 		}
 	}
-	
+
 	return count
 }
 
@@ -179,9 +182,9 @@ func NewLeakyBucket(capacity int, rate time.Duration) *LeakyBucket {
 		bucket:   make(chan struct{}, capacity),
 		stopChan: make(chan struct{}),
 	}
-	
+
 	go lb.leak()
-	
+
 	return lb
 }
 
@@ -189,7 +192,7 @@ func NewLeakyBucket(capacity int, rate time.Duration) *LeakyBucket {
 func (lb *LeakyBucket) leak() {
 	ticker := time.NewTicker(lb.rate)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-lb.stopChan:
@@ -261,9 +264,9 @@ func (rl *AdaptiveRateLimiter) Allow() bool {
 func (rl *AdaptiveRateLimiter) RecordSuccess() {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	
+
 	rl.successCount++
-	
+
 	// Increase rate if we have many successes
 	if rl.successCount > 10 && rl.currentRate < rl.maxRate {
 		rl.adjustRate(rl.currentRate + 1)
@@ -276,9 +279,9 @@ func (rl *AdaptiveRateLimiter) RecordSuccess() {
 func (rl *AdaptiveRateLimiter) RecordFailure() {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	
+
 	rl.failureCount++
-	
+
 	// Decrease rate if we have many failures
 	if rl.failureCount > 3 && rl.currentRate > rl.minRate {
 		rl.adjustRate(rl.currentRate - 1)
@@ -295,7 +298,7 @@ func (rl *AdaptiveRateLimiter) adjustRate(newRate int) {
 	if newRate > rl.maxRate {
 		newRate = rl.maxRate
 	}
-	
+
 	if newRate != rl.currentRate {
 		rl.currentRate = newRate
 		rl.limiter.Stop()
@@ -314,4 +317,3 @@ func (rl *AdaptiveRateLimiter) CurrentRate() int {
 func (rl *AdaptiveRateLimiter) Stop() {
 	rl.limiter.Stop()
 }
-

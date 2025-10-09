@@ -47,7 +47,7 @@ func (p *Producer[T]) Produce(ctx context.Context, numJobs int) error {
 				ID:   p.ID*1000 + i,
 				Data: p.generate(p.ID, i),
 			}
-			
+
 			select {
 			case p.jobs <- job:
 			case <-ctx.Done():
@@ -86,14 +86,14 @@ func (c *Consumer[T, R]) Consume(ctx context.Context) error {
 			if !ok {
 				return nil // Channel closed
 			}
-			
+
 			output, err := c.process(job.Data)
 			result := Result[R]{
 				JobID:  job.ID,
 				Output: output,
 				Error:  err,
 			}
-			
+
 			select {
 			case c.results <- result:
 			case <-ctx.Done():
@@ -135,7 +135,7 @@ func NewProducerConsumerPool[T, R any](
 func (p *ProducerConsumerPool[T, R]) Run(ctx context.Context, jobsPerProducer int) ([]Result[R], error) {
 	var producerWg sync.WaitGroup
 	var consumerWg sync.WaitGroup
-	
+
 	// Start consumers
 	for i := 1; i <= p.numConsumers; i++ {
 		consumerWg.Add(1)
@@ -145,7 +145,7 @@ func (p *ProducerConsumerPool[T, R]) Run(ctx context.Context, jobsPerProducer in
 			consumer.Consume(ctx)
 		}()
 	}
-	
+
 	// Start producers
 	for i := 1; i <= p.numProducers; i++ {
 		producerWg.Add(1)
@@ -155,25 +155,25 @@ func (p *ProducerConsumerPool[T, R]) Run(ctx context.Context, jobsPerProducer in
 			producer.Produce(ctx, jobsPerProducer)
 		}()
 	}
-	
+
 	// Close jobs channel when all producers are done
 	go func() {
 		producerWg.Wait()
 		close(p.jobs)
 	}()
-	
+
 	// Close results channel when all consumers are done
 	go func() {
 		consumerWg.Wait()
 		close(p.results)
 	}()
-	
+
 	// Collect results
 	results := make([]Result[R], 0)
 	for result := range p.results {
 		results = append(results, result)
 	}
-	
+
 	return results, nil
 }
 
@@ -198,7 +198,7 @@ func NewWorkerPool[T, R any](workers int, process func(T) R) *WorkerPool[T, R] {
 // Start starts the worker pool
 func (w *WorkerPool[T, R]) Start(ctx context.Context) {
 	var wg sync.WaitGroup
-	
+
 	for i := 0; i < w.workers; i++ {
 		wg.Add(1)
 		go func(workerID int) {
@@ -221,7 +221,7 @@ func (w *WorkerPool[T, R]) Start(ctx context.Context) {
 			}
 		}(i)
 	}
-	
+
 	go func() {
 		wg.Wait()
 		close(w.results)
@@ -294,7 +294,7 @@ func (p *RateLimitedProducer[T]) Start(ctx context.Context, count int) <-chan T 
 		defer close(p.output)
 		ticker := time.NewTicker(p.rate)
 		defer ticker.Stop()
-		
+
 		for i := 0; i < count; i++ {
 			select {
 			case <-ctx.Done():
@@ -309,7 +309,7 @@ func (p *RateLimitedProducer[T]) Start(ctx context.Context, count int) <-chan T 
 			}
 		}
 	}()
-	
+
 	return p.output
 }
 
@@ -325,4 +325,3 @@ func (r Result[T]) String() string {
 	}
 	return fmt.Sprintf("Result{JobID: %d, Output: %v}", r.JobID, r.Output)
 }
-

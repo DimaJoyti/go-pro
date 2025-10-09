@@ -12,15 +12,15 @@ func ParallelMap[T, R any](input []T, workers int, fn func(T) R) []R {
 	if workers <= 0 {
 		workers = runtime.NumCPU()
 	}
-	
+
 	results := make([]R, len(input))
 	jobs := make(chan struct {
 		index int
 		value T
 	}, len(input))
-	
+
 	var wg sync.WaitGroup
-	
+
 	// Start workers
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
@@ -31,7 +31,7 @@ func ParallelMap[T, R any](input []T, workers int, fn func(T) R) []R {
 			}
 		}()
 	}
-	
+
 	// Send jobs
 	for i, val := range input {
 		jobs <- struct {
@@ -40,7 +40,7 @@ func ParallelMap[T, R any](input []T, workers int, fn func(T) R) []R {
 		}{i, val}
 	}
 	close(jobs)
-	
+
 	wg.Wait()
 	return results
 }
@@ -50,16 +50,16 @@ func ParallelMapWithContext[T, R any](ctx context.Context, input []T, workers in
 	if workers <= 0 {
 		workers = runtime.NumCPU()
 	}
-	
+
 	results := make([]R, len(input))
 	jobs := make(chan struct {
 		index int
 		value T
 	}, len(input))
-	
+
 	errChan := make(chan error, workers)
 	var wg sync.WaitGroup
-	
+
 	// Start workers
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
@@ -81,7 +81,7 @@ func ParallelMapWithContext[T, R any](ctx context.Context, input []T, workers in
 			}
 		}()
 	}
-	
+
 	// Send jobs
 	for i, val := range input {
 		select {
@@ -95,17 +95,17 @@ func ParallelMapWithContext[T, R any](ctx context.Context, input []T, workers in
 		}
 	}
 	close(jobs)
-	
+
 	wg.Wait()
 	close(errChan)
-	
+
 	// Check for errors
 	for err := range errChan {
 		if err != nil {
 			return nil, err
 		}
 	}
-	
+
 	return results, nil
 }
 
@@ -114,20 +114,20 @@ func ParallelFilter[T any](input []T, workers int, predicate func(T) bool) []T {
 	if workers <= 0 {
 		workers = runtime.NumCPU()
 	}
-	
+
 	type result struct {
 		index int
 		keep  bool
 	}
-	
+
 	results := make([]result, len(input))
 	jobs := make(chan struct {
 		index int
 		value T
 	}, len(input))
-	
+
 	var wg sync.WaitGroup
-	
+
 	// Start workers
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
@@ -141,7 +141,7 @@ func ParallelFilter[T any](input []T, workers int, predicate func(T) bool) []T {
 			}
 		}()
 	}
-	
+
 	// Send jobs
 	for i, val := range input {
 		jobs <- struct {
@@ -150,9 +150,9 @@ func ParallelFilter[T any](input []T, workers int, predicate func(T) bool) []T {
 		}{i, val}
 	}
 	close(jobs)
-	
+
 	wg.Wait()
-	
+
 	// Collect filtered results
 	filtered := make([]T, 0)
 	for _, r := range results {
@@ -160,7 +160,7 @@ func ParallelFilter[T any](input []T, workers int, predicate func(T) bool) []T {
 			filtered = append(filtered, input[r.index])
 		}
 	}
-	
+
 	return filtered
 }
 
@@ -169,33 +169,33 @@ func ParallelReduce[T, R any](input []T, workers int, initial R, reducer func(R,
 	if workers <= 0 {
 		workers = runtime.NumCPU()
 	}
-	
+
 	if len(input) == 0 {
 		return initial
 	}
-	
+
 	// Divide work among workers
 	chunkSize := (len(input) + workers - 1) / workers
 	partialResults := make([]R, workers)
-	
+
 	var wg sync.WaitGroup
-	
+
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
-			
+
 			start := workerID * chunkSize
 			end := start + chunkSize
 			if end > len(input) {
 				end = len(input)
 			}
-			
+
 			if start >= len(input) {
 				partialResults[workerID] = initial
 				return
 			}
-			
+
 			result := initial
 			for j := start; j < end; j++ {
 				result = reducer(result, input[j])
@@ -203,15 +203,15 @@ func ParallelReduce[T, R any](input []T, workers int, initial R, reducer func(R,
 			partialResults[workerID] = result
 		}(i)
 	}
-	
+
 	wg.Wait()
-	
+
 	// Combine partial results
 	finalResult := initial
 	for _, partial := range partialResults {
 		finalResult = combiner(finalResult, partial)
 	}
-	
+
 	return finalResult
 }
 
@@ -220,10 +220,10 @@ func ParallelForEach[T any](input []T, workers int, fn func(T)) {
 	if workers <= 0 {
 		workers = runtime.NumCPU()
 	}
-	
+
 	jobs := make(chan T, len(input))
 	var wg sync.WaitGroup
-	
+
 	// Start workers
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
@@ -234,13 +234,13 @@ func ParallelForEach[T any](input []T, workers int, fn func(T)) {
 			}
 		}()
 	}
-	
+
 	// Send jobs
 	for _, val := range input {
 		jobs <- val
 	}
 	close(jobs)
-	
+
 	wg.Wait()
 }
 
@@ -249,7 +249,7 @@ func ParallelBatch[T, R any](input []T, batchSize int, workers int, fn func([]T)
 	if workers <= 0 {
 		workers = runtime.NumCPU()
 	}
-	
+
 	// Create batches
 	batches := make([][]T, 0)
 	for i := 0; i < len(input); i += batchSize {
@@ -259,21 +259,21 @@ func ParallelBatch[T, R any](input []T, batchSize int, workers int, fn func([]T)
 		}
 		batches = append(batches, input[i:end])
 	}
-	
+
 	// Process batches in parallel
 	type batchResult struct {
 		index   int
 		results []R
 	}
-	
+
 	resultChan := make(chan batchResult, len(batches))
 	jobs := make(chan struct {
 		index int
 		batch []T
 	}, len(batches))
-	
+
 	var wg sync.WaitGroup
-	
+
 	// Start workers
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
@@ -288,7 +288,7 @@ func ParallelBatch[T, R any](input []T, batchSize int, workers int, fn func([]T)
 			}
 		}()
 	}
-	
+
 	// Send jobs
 	for i, batch := range batches {
 		jobs <- struct {
@@ -297,25 +297,25 @@ func ParallelBatch[T, R any](input []T, batchSize int, workers int, fn func([]T)
 		}{i, batch}
 	}
 	close(jobs)
-	
+
 	// Wait and close results
 	go func() {
 		wg.Wait()
 		close(resultChan)
 	}()
-	
+
 	// Collect and order results
 	batchResults := make([][]R, len(batches))
 	for result := range resultChan {
 		batchResults[result.index] = result.results
 	}
-	
+
 	// Flatten results
 	finalResults := make([]R, 0)
 	for _, batch := range batchResults {
 		finalResults = append(finalResults, batch...)
 	}
-	
+
 	return finalResults
 }
 
@@ -335,7 +335,7 @@ func ParallelMax[T interface{ ~int | ~int64 | ~float64 }](input []T, workers int
 	if len(input) == 0 {
 		return T(0)
 	}
-	
+
 	return ParallelReduce(
 		input,
 		workers,
@@ -360,7 +360,7 @@ func ParallelMin[T interface{ ~int | ~int64 | ~float64 }](input []T, workers int
 	if len(input) == 0 {
 		return T(0)
 	}
-	
+
 	return ParallelReduce(
 		input,
 		workers,
@@ -379,4 +379,3 @@ func ParallelMin[T interface{ ~int | ~int64 | ~float64 }](input []T, workers int
 		},
 	)
 }
-

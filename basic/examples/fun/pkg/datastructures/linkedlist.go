@@ -42,14 +42,14 @@ func NewLinkedList[T any]() *LinkedList[T] {
 func (ll *LinkedList[T]) InsertAtBeginning(data T) {
 	ll.mu.Lock()
 	defer ll.mu.Unlock()
-	
+
 	newNode := &Node[T]{Data: data, Next: ll.head}
 	ll.head = newNode
-	
+
 	if ll.tail == nil {
 		ll.tail = newNode
 	}
-	
+
 	ll.size++
 }
 
@@ -58,9 +58,9 @@ func (ll *LinkedList[T]) InsertAtBeginning(data T) {
 func (ll *LinkedList[T]) InsertAtEnd(data T) {
 	ll.mu.Lock()
 	defer ll.mu.Unlock()
-	
+
 	newNode := &Node[T]{Data: data, Next: nil}
-	
+
 	if ll.head == nil {
 		ll.head = newNode
 		ll.tail = newNode
@@ -68,7 +68,7 @@ func (ll *LinkedList[T]) InsertAtEnd(data T) {
 		ll.tail.Next = newNode
 		ll.tail = newNode
 	}
-	
+
 	ll.size++
 }
 
@@ -77,11 +77,11 @@ func (ll *LinkedList[T]) InsertAtEnd(data T) {
 func (ll *LinkedList[T]) InsertAtPosition(data T, position int) error {
 	ll.mu.Lock()
 	defer ll.mu.Unlock()
-	
+
 	if position < 0 || position > ll.size {
 		return ErrIndexOutOfBounds
 	}
-	
+
 	if position == 0 {
 		newNode := &Node[T]{Data: data, Next: ll.head}
 		ll.head = newNode
@@ -91,19 +91,19 @@ func (ll *LinkedList[T]) InsertAtPosition(data T, position int) error {
 		ll.size++
 		return nil
 	}
-	
+
 	current := ll.head
 	for i := 0; i < position-1; i++ {
 		current = current.Next
 	}
-	
+
 	newNode := &Node[T]{Data: data, Next: current.Next}
 	current.Next = newNode
-	
+
 	if newNode.Next == nil {
 		ll.tail = newNode
 	}
-	
+
 	ll.size++
 	return nil
 }
@@ -113,20 +113,20 @@ func (ll *LinkedList[T]) InsertAtPosition(data T, position int) error {
 func (ll *LinkedList[T]) DeleteAtBeginning() (T, error) {
 	ll.mu.Lock()
 	defer ll.mu.Unlock()
-	
+
 	var zero T
 	if ll.head == nil {
 		return zero, ErrEmptyList
 	}
-	
+
 	data := ll.head.Data
 	ll.head = ll.head.Next
 	ll.size--
-	
+
 	if ll.head == nil {
 		ll.tail = nil
 	}
-	
+
 	return data, nil
 }
 
@@ -135,12 +135,12 @@ func (ll *LinkedList[T]) DeleteAtBeginning() (T, error) {
 func (ll *LinkedList[T]) DeleteAtEnd() (T, error) {
 	ll.mu.Lock()
 	defer ll.mu.Unlock()
-	
+
 	var zero T
 	if ll.head == nil {
 		return zero, ErrEmptyList
 	}
-	
+
 	if ll.head.Next == nil {
 		data := ll.head.Data
 		ll.head = nil
@@ -148,12 +148,12 @@ func (ll *LinkedList[T]) DeleteAtEnd() (T, error) {
 		ll.size--
 		return data, nil
 	}
-	
+
 	current := ll.head
 	for current.Next.Next != nil {
 		current = current.Next
 	}
-	
+
 	data := current.Next.Data
 	current.Next = nil
 	ll.tail = current
@@ -166,12 +166,12 @@ func (ll *LinkedList[T]) DeleteAtEnd() (T, error) {
 func (ll *LinkedList[T]) DeleteAtPosition(position int) (T, error) {
 	ll.mu.Lock()
 	defer ll.mu.Unlock()
-	
+
 	var zero T
 	if position < 0 || position >= ll.size {
 		return zero, ErrIndexOutOfBounds
 	}
-	
+
 	if position == 0 {
 		data := ll.head.Data
 		ll.head = ll.head.Next
@@ -181,19 +181,19 @@ func (ll *LinkedList[T]) DeleteAtPosition(position int) (T, error) {
 		}
 		return data, nil
 	}
-	
+
 	current := ll.head
 	for i := 0; i < position-1; i++ {
 		current = current.Next
 	}
-	
+
 	data := current.Next.Data
 	current.Next = current.Next.Next
-	
+
 	if current.Next == nil {
 		ll.tail = current
 	}
-	
+
 	ll.size--
 	return data, nil
 }
@@ -203,10 +203,10 @@ func (ll *LinkedList[T]) DeleteAtPosition(position int) (T, error) {
 func (ll *LinkedList[T]) Search(data T, equals func(T, T) bool) (int, bool) {
 	ll.mu.RLock()
 	defer ll.mu.RUnlock()
-	
+
 	current := ll.head
 	index := 0
-	
+
 	for current != nil {
 		if equals(current.Data, data) {
 			return index, true
@@ -214,7 +214,7 @@ func (ll *LinkedList[T]) Search(data T, equals func(T, T) bool) (int, bool) {
 		current = current.Next
 		index++
 	}
-	
+
 	return -1, false
 }
 
@@ -223,17 +223,17 @@ func (ll *LinkedList[T]) Search(data T, equals func(T, T) bool) (int, bool) {
 func (ll *LinkedList[T]) Get(position int) (T, error) {
 	ll.mu.RLock()
 	defer ll.mu.RUnlock()
-	
+
 	var zero T
 	if position < 0 || position >= ll.size {
 		return zero, ErrIndexOutOfBounds
 	}
-	
+
 	current := ll.head
 	for i := 0; i < position; i++ {
 		current = current.Next
 	}
-	
+
 	return current.Data, nil
 }
 
@@ -268,15 +268,15 @@ func (ll *LinkedList[T]) Clear() {
 func (ll *LinkedList[T]) ToSlice() []T {
 	ll.mu.RLock()
 	defer ll.mu.RUnlock()
-	
+
 	result := make([]T, 0, ll.size)
 	current := ll.head
-	
+
 	for current != nil {
 		result = append(result, current.Data)
 		current = current.Next
 	}
-	
+
 	return result
 }
 
@@ -285,22 +285,22 @@ func (ll *LinkedList[T]) ToSlice() []T {
 func (ll *LinkedList[T]) Reverse() {
 	ll.mu.Lock()
 	defer ll.mu.Unlock()
-	
+
 	if ll.head == nil || ll.head.Next == nil {
 		return
 	}
-	
+
 	var prev *Node[T]
 	current := ll.head
 	ll.tail = ll.head
-	
+
 	for current != nil {
 		next := current.Next
 		current.Next = prev
 		prev = current
 		current = next
 	}
-	
+
 	ll.head = prev
 }
 
@@ -309,7 +309,7 @@ func (ll *LinkedList[T]) Reverse() {
 func (ll *LinkedList[T]) ForEach(fn func(T)) {
 	ll.mu.RLock()
 	defer ll.mu.RUnlock()
-	
+
 	current := ll.head
 	for current != nil {
 		fn(current.Data)
@@ -321,14 +321,14 @@ func (ll *LinkedList[T]) ForEach(fn func(T)) {
 func (ll *LinkedList[T]) String() string {
 	ll.mu.RLock()
 	defer ll.mu.RUnlock()
-	
+
 	if ll.head == nil {
 		return "LinkedList[]"
 	}
-	
+
 	var sb strings.Builder
 	sb.WriteString("LinkedList[")
-	
+
 	current := ll.head
 	for current != nil {
 		sb.WriteString(fmt.Sprintf("%v", current.Data))
@@ -337,8 +337,7 @@ func (ll *LinkedList[T]) String() string {
 		}
 		current = current.Next
 	}
-	
+
 	sb.WriteString("]")
 	return sb.String()
 }
-

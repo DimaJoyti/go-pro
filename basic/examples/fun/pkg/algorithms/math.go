@@ -19,14 +19,14 @@ func IsPrime(n int) bool {
 	if n%2 == 0 || n%3 == 0 {
 		return false
 	}
-	
+
 	// Check for divisors up to √n
 	for i := 5; i*i <= n; i += 6 {
 		if n%i == 0 || n%(i+2) == 0 {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -37,13 +37,13 @@ func GeneratePrimes(n int) []int {
 	if n < 2 {
 		return []int{}
 	}
-	
+
 	// Create a boolean slice to mark primes
 	isPrime := make([]bool, n+1)
 	for i := 2; i <= n; i++ {
 		isPrime[i] = true
 	}
-	
+
 	// Sieve of Eratosthenes
 	for i := 2; i*i <= n; i++ {
 		if isPrime[i] {
@@ -52,7 +52,7 @@ func GeneratePrimes(n int) []int {
 			}
 		}
 	}
-	
+
 	// Collect primes
 	primes := make([]int, 0)
 	for i := 2; i <= n; i++ {
@@ -60,7 +60,7 @@ func GeneratePrimes(n int) []int {
 			primes = append(primes, i)
 		}
 	}
-	
+
 	return primes
 }
 
@@ -70,7 +70,7 @@ func GeneratePrimesConcurrent(limit int, workers int) []int {
 	if limit < 2 {
 		return []int{}
 	}
-	
+
 	// Use sieve for better performance
 	return GeneratePrimes(limit)
 }
@@ -85,7 +85,7 @@ func Fibonacci(n int) int {
 	if n <= 1 {
 		return n
 	}
-	
+
 	a, b := 0, 1
 	for i := 2; i <= n; i++ {
 		a, b = b, a+b
@@ -99,7 +99,7 @@ func FibonacciSequence(n int) []int {
 	if n <= 0 {
 		return []int{}
 	}
-	
+
 	sequence := make([]int, n)
 	if n >= 1 {
 		sequence[0] = 0
@@ -107,11 +107,11 @@ func FibonacciSequence(n int) []int {
 	if n >= 2 {
 		sequence[1] = 1
 	}
-	
+
 	for i := 2; i < n; i++ {
 		sequence[i] = sequence[i-1] + sequence[i-2]
 	}
-	
+
 	return sequence
 }
 
@@ -121,15 +121,15 @@ func FibonacciConcurrent(n int, workers int) []int {
 	if n <= 0 {
 		return []int{}
 	}
-	
+
 	jobs := make(chan int, n)
 	results := make(chan struct {
 		index int
 		value int
 	}, n)
-	
+
 	var wg sync.WaitGroup
-	
+
 	// Start workers
 	for w := 0; w < workers; w++ {
 		wg.Add(1)
@@ -143,7 +143,7 @@ func FibonacciConcurrent(n int, workers int) []int {
 			}
 		}()
 	}
-	
+
 	// Send jobs
 	go func() {
 		for i := 0; i < n; i++ {
@@ -151,19 +151,19 @@ func FibonacciConcurrent(n int, workers int) []int {
 		}
 		close(jobs)
 	}()
-	
+
 	// Wait for workers to finish
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
-	
+
 	// Collect results
 	sequence := make([]int, n)
 	for result := range results {
 		sequence[result.index] = result.value
 	}
-	
+
 	return sequence
 }
 
@@ -172,7 +172,7 @@ func FibonacciConcurrent(n int, workers int) []int {
 func GCD(a, b int) int {
 	a = abs(a)
 	b = abs(b)
-	
+
 	for b != 0 {
 		a, b = b, a%b
 	}
@@ -204,7 +204,7 @@ func Factorial(n int) int {
 	if n <= 1 {
 		return 1
 	}
-	
+
 	result := 1
 	for i := 2; i <= n; i++ {
 		result *= i
@@ -221,11 +221,11 @@ func Power(base, exponent int) int {
 	if exponent < 0 {
 		return 0 // Integer division, would be 1/Power(base, -exponent) for floats
 	}
-	
+
 	result := 1
 	currentBase := base
 	currentExp := exponent
-	
+
 	for currentExp > 0 {
 		if currentExp%2 == 1 {
 			result *= currentBase
@@ -233,7 +233,7 @@ func Power(base, exponent int) int {
 		currentBase *= currentBase
 		currentExp /= 2
 	}
-	
+
 	return result
 }
 
@@ -283,12 +283,12 @@ func Mode[T comparable](numbers []T) T {
 		var zero T
 		return zero
 	}
-	
+
 	frequency := make(map[T]int)
 	for _, num := range numbers {
 		frequency[num]++
 	}
-	
+
 	var mode T
 	maxCount := 0
 	for num, count := range frequency {
@@ -297,7 +297,7 @@ func Mode[T comparable](numbers []T) T {
 			maxCount = count
 		}
 	}
-	
+
 	return mode
 }
 
@@ -307,15 +307,15 @@ func StandardDeviation[T constraints.Integer | constraints.Float](numbers []T) f
 	if len(numbers) == 0 {
 		return 0
 	}
-	
+
 	avg := Average(numbers)
 	var sumSquaredDiff float64
-	
+
 	for _, num := range numbers {
 		diff := float64(num) - avg
 		sumSquaredDiff += diff * diff
 	}
-	
+
 	variance := sumSquaredDiff / float64(len(numbers))
 	return math.Sqrt(variance)
 }
@@ -326,7 +326,7 @@ func IsPerfectSquare(n int) bool {
 	if n < 0 {
 		return false
 	}
-	
+
 	sqrt := int(math.Sqrt(float64(n)))
 	return sqrt*sqrt == n
 }
@@ -343,7 +343,7 @@ func NextPowerOfTwo(n int) int {
 	if n <= 0 {
 		return 1
 	}
-	
+
 	n--
 	n |= n >> 1
 	n |= n >> 2
@@ -351,7 +351,6 @@ func NextPowerOfTwo(n int) int {
 	n |= n >> 8
 	n |= n >> 16
 	n++
-	
+
 	return n
 }
-

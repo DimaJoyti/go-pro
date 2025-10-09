@@ -44,12 +44,12 @@ func (q *Queue[T]) Enqueue(item T) {
 func (q *Queue[T]) Dequeue() (T, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	
+
 	var zero T
 	if len(q.items) == 0 {
 		return zero, ErrEmptyQueue
 	}
-	
+
 	item := q.items[0]
 	q.items = q.items[1:]
 	return item, nil
@@ -61,7 +61,7 @@ func (q *Queue[T]) Dequeue() (T, error) {
 func (q *Queue[T]) Peek() (T, error) {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	
+
 	var zero T
 	if len(q.items) == 0 {
 		return zero, ErrEmptyQueue
@@ -98,7 +98,7 @@ func (q *Queue[T]) Clear() {
 func (q *Queue[T]) ToSlice() []T {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	
+
 	result := make([]T, len(q.items))
 	copy(result, q.items)
 	return result
@@ -108,11 +108,11 @@ func (q *Queue[T]) ToSlice() []T {
 func (q *Queue[T]) String() string {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	
+
 	if len(q.items) == 0 {
 		return "Queue[]"
 	}
-	
+
 	return fmt.Sprintf("Queue%v", q.items)
 }
 
@@ -121,7 +121,7 @@ func (q *Queue[T]) String() string {
 func (q *Queue[T]) Clone() *Queue[T] {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	
+
 	newQueue := NewQueueWithCapacity[T](len(q.items))
 	newQueue.items = make([]T, len(q.items))
 	copy(newQueue.items, q.items)
@@ -133,7 +133,7 @@ func (q *Queue[T]) Clone() *Queue[T] {
 func (q *Queue[T]) Contains(item T, equals func(T, T) bool) bool {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	
+
 	for _, v := range q.items {
 		if equals(v, item) {
 			return true
@@ -147,7 +147,7 @@ func (q *Queue[T]) Contains(item T, equals func(T, T) bool) bool {
 func (q *Queue[T]) Filter(predicate func(T) bool) *Queue[T] {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	
+
 	newQueue := NewQueue[T]()
 	for _, item := range q.items {
 		if predicate(item) {
@@ -162,7 +162,7 @@ func (q *Queue[T]) Filter(predicate func(T) bool) *Queue[T] {
 func (q *Queue[T]) ForEach(fn func(T)) {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	
+
 	for _, item := range q.items {
 		fn(item)
 	}
@@ -205,7 +205,7 @@ func NewPriorityQueue[T any]() *PriorityQueue[T] {
 func (pq *PriorityQueue[T]) Enqueue(item T, priority Priority) {
 	pq.mu.Lock()
 	defer pq.mu.Unlock()
-	
+
 	switch priority {
 	case PriorityHigh:
 		pq.high = append(pq.high, item)
@@ -224,30 +224,30 @@ func (pq *PriorityQueue[T]) Enqueue(item T, priority Priority) {
 func (pq *PriorityQueue[T]) Dequeue() (T, error) {
 	pq.mu.Lock()
 	defer pq.mu.Unlock()
-	
+
 	var zero T
-	
+
 	// Check high priority first
 	if len(pq.high) > 0 {
 		item := pq.high[0]
 		pq.high = pq.high[1:]
 		return item, nil
 	}
-	
+
 	// Then medium priority
 	if len(pq.medium) > 0 {
 		item := pq.medium[0]
 		pq.medium = pq.medium[1:]
 		return item, nil
 	}
-	
+
 	// Finally low priority
 	if len(pq.low) > 0 {
 		item := pq.low[0]
 		pq.low = pq.low[1:]
 		return item, nil
 	}
-	
+
 	return zero, ErrEmptyQueue
 }
 
@@ -281,8 +281,7 @@ func (pq *PriorityQueue[T]) Clear() {
 func (pq *PriorityQueue[T]) String() string {
 	pq.mu.RLock()
 	defer pq.mu.RUnlock()
-	
-	return fmt.Sprintf("PriorityQueue{High: %v, Medium: %v, Low: %v}", 
+
+	return fmt.Sprintf("PriorityQueue{High: %v, Medium: %v, Low: %v}",
 		pq.high, pq.medium, pq.low)
 }
-

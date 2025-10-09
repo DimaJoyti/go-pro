@@ -11,13 +11,13 @@ func TestVariables(t *testing.T) {
 	if x != 42 {
 		t.Errorf("Expected x to be 42, got %d", x)
 	}
-	
+
 	// Type inference
 	y := 100
 	if y != 100 {
 		t.Errorf("Expected y to be 100, got %d", y)
 	}
-	
+
 	// Multiple assignment
 	a, b := 1, 2
 	if a != 1 || b != 2 {
@@ -32,13 +32,13 @@ func TestFunctions(t *testing.T) {
 	if result != 8 {
 		t.Errorf("Expected 5+3=8, got %d", result)
 	}
-	
+
 	// Multiple returns
 	q, r := divMod(17, 5)
 	if q != 3 || r != 2 {
 		t.Errorf("Expected 17/5 = 3 remainder 2, got %d remainder %d", q, r)
 	}
-	
+
 	// Variadic function
 	sum := sumNumbers(1, 2, 3, 4, 5)
 	if sum != 15 {
@@ -66,18 +66,18 @@ func sumNumbers(nums ...int) int {
 func TestPointers(t *testing.T) {
 	x := 10
 	ptr := &x
-	
+
 	// Check pointer points to x
 	if *ptr != 10 {
 		t.Errorf("Expected *ptr=10, got %d", *ptr)
 	}
-	
+
 	// Modify through pointer
 	*ptr = 20
 	if x != 20 {
 		t.Errorf("Expected x=20 after *ptr=20, got %d", x)
 	}
-	
+
 	// Swap through pointers
 	a, b := 5, 10
 	swapPointers(&a, &b)
@@ -96,17 +96,17 @@ func TestStructs(t *testing.T) {
 		Name string
 		Age  int
 	}
-	
+
 	p := Person{Name: "Alice", Age: 30}
-	
+
 	if p.Name != "Alice" {
 		t.Errorf("Expected name=Alice, got %s", p.Name)
 	}
-	
+
 	if p.Age != 30 {
 		t.Errorf("Expected age=30, got %d", p.Age)
 	}
-	
+
 	// Modify struct
 	p.Age = 31
 	if p.Age != 31 {
@@ -117,12 +117,12 @@ func TestStructs(t *testing.T) {
 // Test struct methods
 func TestStructMethods(t *testing.T) {
 	rect := Rectangle{Width: 10, Height: 5}
-	
+
 	area := rect.Area()
 	if area != 50 {
 		t.Errorf("Expected area=50, got %.2f", area)
 	}
-	
+
 	perimeter := rect.Perimeter()
 	if perimeter != 30 {
 		t.Errorf("Expected perimeter=30, got %.2f", perimeter)
@@ -145,17 +145,17 @@ func (r Rectangle) Perimeter() float64 {
 // Test pointer receivers
 func TestPointerReceivers(t *testing.T) {
 	counter := Counter{Count: 0}
-	
+
 	counter.Increment()
 	if counter.Count != 1 {
 		t.Errorf("Expected count=1, got %d", counter.Count)
 	}
-	
+
 	counter.Add(5)
 	if counter.Count != 6 {
 		t.Errorf("Expected count=6, got %d", counter.Count)
 	}
-	
+
 	counter.Reset()
 	if counter.Count != 0 {
 		t.Errorf("Expected count=0 after reset, got %d", counter.Count)
@@ -181,14 +181,14 @@ func (c *Counter) Reset() {
 // Test interfaces
 func TestInterfaces(t *testing.T) {
 	var s Shape
-	
+
 	s = Circle{Radius: 5}
 	area := s.Area()
 	expected := 3.14159 * 5 * 5
 	if area < expected-0.01 || area > expected+0.01 {
 		t.Errorf("Expected circle area ~%.2f, got %.2f", expected, area)
 	}
-	
+
 	s = Rect{Width: 10, Height: 5}
 	area = s.Area()
 	if area != 50 {
@@ -220,7 +220,7 @@ func (r Rect) Area() float64 {
 // Test type assertions
 func TestTypeAssertions(t *testing.T) {
 	var i interface{} = "Hello"
-	
+
 	// Successful assertion
 	s, ok := i.(string)
 	if !ok {
@@ -229,7 +229,7 @@ func TestTypeAssertions(t *testing.T) {
 	if s != "Hello" {
 		t.Errorf("Expected 'Hello', got %s", s)
 	}
-	
+
 	// Failed assertion
 	_, ok = i.(int)
 	if ok {
@@ -247,7 +247,7 @@ func TestLoops(t *testing.T) {
 	if sum != 15 {
 		t.Errorf("Expected sum=15, got %d", sum)
 	}
-	
+
 	// Range loop
 	numbers := []int{1, 2, 3, 4, 5}
 	sum = 0
@@ -257,7 +257,7 @@ func TestLoops(t *testing.T) {
 	if sum != 15 {
 		t.Errorf("Expected sum=15, got %d", sum)
 	}
-	
+
 	// While-style loop
 	count := 0
 	i := 1
@@ -277,7 +277,7 @@ func TestIota(t *testing.T) {
 		Second
 		Third
 	)
-	
+
 	if First != 0 {
 		t.Errorf("Expected First=0, got %d", First)
 	}
@@ -287,14 +287,14 @@ func TestIota(t *testing.T) {
 	if Third != 2 {
 		t.Errorf("Expected Third=2, got %d", Third)
 	}
-	
+
 	// Bit flags
 	const (
 		FlagRead    = 1 << iota // 1
 		FlagWrite               // 2
 		FlagExecute             // 4
 	)
-	
+
 	if FlagRead != 1 {
 		t.Errorf("Expected FlagRead=1, got %d", FlagRead)
 	}
@@ -305,4 +305,3 @@ func TestIota(t *testing.T) {
 		t.Errorf("Expected FlagExecute=4, got %d", FlagExecute)
 	}
 }
-

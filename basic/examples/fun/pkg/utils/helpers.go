@@ -164,7 +164,7 @@ func Chunk[T any](slice []T, size int) [][]T {
 	if size <= 0 {
 		return nil
 	}
-	
+
 	chunks := make([][]T, 0, (len(slice)+size-1)/size)
 	for i := 0; i < len(slice); i += size {
 		end := i + size
@@ -235,4 +235,3 @@ func Throttle(interval time.Duration, fn func()) func() {
 		}
 	}
 }
-

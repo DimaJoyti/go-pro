@@ -11,10 +11,10 @@ import (
 func IsPalindrome(s string) bool {
 	// Clean the string: remove non-alphanumeric and convert to lowercase
 	cleaned := cleanString(s)
-	
+
 	left := 0
 	right := len(cleaned) - 1
-	
+
 	for left < right {
 		if cleaned[left] != cleaned[right] {
 			return false
@@ -22,7 +22,7 @@ func IsPalindrome(s string) bool {
 		left++
 		right--
 	}
-	
+
 	return true
 }
 
@@ -83,17 +83,17 @@ func CountWords(text string) int {
 // Time complexity: O(n)
 func WordFrequency(text string) map[string]int {
 	frequency := make(map[string]int)
-	
+
 	// Extract words
 	words := extractWords(text)
-	
+
 	// Count each word
 	for _, word := range words {
 		if word != "" {
 			frequency[word]++
 		}
 	}
-	
+
 	return frequency
 }
 
@@ -101,12 +101,12 @@ func WordFrequency(text string) map[string]int {
 func extractWords(text string) []string {
 	// Convert to lowercase
 	text = strings.ToLower(text)
-	
+
 	// Split into words
 	words := strings.FieldsFunc(text, func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
 	})
-	
+
 	return words
 }
 
@@ -115,17 +115,17 @@ func extractWords(text string) []string {
 // Time complexity: O(n)
 func MostFrequentWord(text string) (string, int) {
 	frequency := WordFrequency(text)
-	
+
 	maxWord := ""
 	maxCount := 0
-	
+
 	for word, count := range frequency {
 		if count > maxCount {
 			maxWord = word
 			maxCount = count
 		}
 	}
-	
+
 	return maxWord, maxCount
 }
 
@@ -136,25 +136,25 @@ func IsAnagram(s1, s2 string) bool {
 	// Remove spaces and convert to lowercase
 	s1 = strings.ReplaceAll(strings.ToLower(s1), " ", "")
 	s2 = strings.ReplaceAll(strings.ToLower(s2), " ", "")
-	
+
 	if len(s1) != len(s2) {
 		return false
 	}
-	
+
 	// Count character frequencies
 	charCount := make(map[rune]int)
-	
+
 	for _, ch := range s1 {
 		charCount[ch]++
 	}
-	
+
 	for _, ch := range s2 {
 		charCount[ch]--
 		if charCount[ch] < 0 {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -164,14 +164,14 @@ func LongestCommonPrefix(strs []string) string {
 	if len(strs) == 0 {
 		return ""
 	}
-	
+
 	if len(strs) == 1 {
 		return strs[0]
 	}
-	
+
 	// Use first string as reference
 	prefix := strs[0]
-	
+
 	for i := 1; i < len(strs); i++ {
 		// Reduce prefix until it matches the start of current string
 		for !strings.HasPrefix(strs[i], prefix) {
@@ -181,7 +181,7 @@ func LongestCommonPrefix(strs []string) string {
 			}
 		}
 	}
-	
+
 	return prefix
 }
 
@@ -190,13 +190,13 @@ func LongestCommonPrefix(strs []string) string {
 func CountVowels(s string) int {
 	count := 0
 	vowels := "aeiouAEIOU"
-	
+
 	for _, ch := range s {
 		if strings.ContainsRune(vowels, ch) {
 			count++
 		}
 	}
-	
+
 	return count
 }
 
@@ -204,13 +204,13 @@ func CountVowels(s string) int {
 // Time complexity: O(n)
 func CountConsonants(s string) int {
 	count := 0
-	
+
 	for _, ch := range s {
 		if unicode.IsLetter(ch) && !strings.ContainsRune("aeiouAEIOU", ch) {
 			count++
 		}
 	}
-	
+
 	return count
 }
 
@@ -219,14 +219,14 @@ func CountConsonants(s string) int {
 func RemoveDuplicates(s string) string {
 	seen := make(map[rune]bool)
 	var result strings.Builder
-	
+
 	for _, ch := range s {
 		if !seen[ch] {
 			seen[ch] = true
 			result.WriteRune(ch)
 		}
 	}
-	
+
 	return result.String()
 }
 
@@ -236,7 +236,7 @@ func IsSubsequence(s, t string) bool {
 	if len(s) == 0 {
 		return true
 	}
-	
+
 	sIdx := 0
 	for _, ch := range t {
 		if sIdx < len(s) && rune(s[sIdx]) == ch {
@@ -246,7 +246,7 @@ func IsSubsequence(s, t string) bool {
 			}
 		}
 	}
-	
+
 	return sIdx == len(s)
 }
 
@@ -255,13 +255,13 @@ func IsSubsequence(s, t string) bool {
 // Space complexity: O(n * m)
 func LevenshteinDistance(s1, s2 string) int {
 	m, n := len(s1), len(s2)
-	
+
 	// Create a 2D slice for dynamic programming
 	dp := make([][]int, m+1)
 	for i := range dp {
 		dp[i] = make([]int, n+1)
 	}
-	
+
 	// Initialize base cases
 	for i := 0; i <= m; i++ {
 		dp[i][0] = i
@@ -269,7 +269,7 @@ func LevenshteinDistance(s1, s2 string) int {
 	for j := 0; j <= n; j++ {
 		dp[0][j] = j
 	}
-	
+
 	// Fill the dp table
 	for i := 1; i <= m; i++ {
 		for j := 1; j <= n; j++ {
@@ -280,7 +280,7 @@ func LevenshteinDistance(s1, s2 string) int {
 			}
 		}
 	}
-	
+
 	return dp[m][n]
 }
 
@@ -309,11 +309,10 @@ func TruncateString(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
 	}
-	
+
 	if maxLen <= 3 {
 		return s[:maxLen]
 	}
-	
+
 	return s[:maxLen-3] + "..."
 }
-
